@@ -68,14 +68,14 @@ Respond in EXACTLY this JSON format (no markdown, no explanation):
   "justification": "<2-3 sentences explaining the difficulty rating>"
 }`;
 
-    // Use Lovable AI Gateway with Gemini
+    // Use Lovable AI Gateway
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
     if (!lovableApiKey) {
       console.error('LOVABLE_API_KEY not found');
       throw new Error('AI service not configured. Please enable Lovable AI.');
     }
 
-    const response = await fetch('https://ai.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${lovableApiKey}`,
