@@ -15,7 +15,7 @@ const authSchema = z.object({
   name: z.string().min(1, 'Please enter your name').optional(),
 });
 
-export const AuthPage = () => {
+const AuthPage = () => {
   const navigate = useNavigate();
   const { signIn, signUp } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
@@ -180,3 +180,5 @@ export const AuthPage = () => {
     </div>
   );
 };
+
+export default AuthPage;

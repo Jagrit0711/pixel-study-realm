@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useTasks } from '@/hooks/useTasks';
 import { useExams } from '@/hooks/useExams';
+import { useGameStore } from '@/store/gameStore';
 import { PixelPanel } from '../game/PixelPanel';
 import { PixelButton } from '../game/PixelButton';
 import { PixelAvatar } from '../game/PixelAvatar';
@@ -10,11 +11,8 @@ import { WrappedReport } from '../reports/WrappedReport';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Trophy, Target, Clock, Gift, IndianRupee, Loader2 } from 'lucide-react';
 
-interface HubRoomConnectedProps {
-  setCurrentRoom: (room: 'hub' | 'squad' | 'quest-board' | 'exam-room' | 'profile') => void;
-}
-
-export const HubRoomConnected = ({ setCurrentRoom }: HubRoomConnectedProps) => {
+export const HubRoomConnected = () => {
+  const { setCurrentRoom } = useGameStore();
   const { user } = useAuth();
   const { profile, loading } = useProfile();
   const { tasks } = useTasks();
