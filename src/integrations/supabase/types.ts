@@ -14,7 +14,300 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      achievements: {
+        Row: {
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          name: string
+          points_required: number | null
+          streak_required: number | null
+          tasks_required: number | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          icon: string
+          id?: string
+          name: string
+          points_required?: number | null
+          streak_required?: number | null
+          tasks_required?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          points_required?: number | null
+          streak_required?: number | null
+          tasks_required?: number | null
+        }
+        Relationships: []
+      }
+      daily_reports: {
+        Row: {
+          ai_insights: Json | null
+          created_at: string
+          id: string
+          points_earned: number
+          points_lost: number
+          report_date: string
+          tasks_completed: number
+          tasks_missed: number
+          user_id: string
+        }
+        Insert: {
+          ai_insights?: Json | null
+          created_at?: string
+          id?: string
+          points_earned?: number
+          points_lost?: number
+          report_date: string
+          tasks_completed?: number
+          tasks_missed?: number
+          user_id: string
+        }
+        Update: {
+          ai_insights?: Json | null
+          created_at?: string
+          id?: string
+          points_earned?: number
+          points_lost?: number
+          report_date?: string
+          tasks_completed?: number
+          tasks_missed?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      exams: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          start_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          start_date: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          start_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          amount_owed: number
+          amount_to_receive: number
+          avatar_seed: string
+          created_at: string
+          current_streak: number
+          exp: number
+          id: string
+          level: number
+          longest_streak: number
+          name: string
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_owed?: number
+          amount_to_receive?: number
+          avatar_seed?: string
+          created_at?: string
+          current_streak?: number
+          exp?: number
+          id?: string
+          level?: number
+          longest_streak?: number
+          name?: string
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_owed?: number
+          amount_to_receive?: number
+          avatar_seed?: string
+          created_at?: string
+          current_streak?: number
+          exp?: number
+          id?: string
+          level?: number
+          longest_streak?: number
+          name?: string
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      squad_members: {
+        Row: {
+          id: string
+          joined_at: string
+          squad_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          squad_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          squad_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "squad_members_squad_id_fkey"
+            columns: ["squad_id"]
+            isOneToOne: false
+            referencedRelation: "squads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      squads: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          chapter: string
+          completed_at: string | null
+          created_at: string
+          date: string
+          difficulty_justification: string | null
+          difficulty_score: number | null
+          difficulty_tier: string | null
+          exam_id: string | null
+          id: string
+          points: number
+          proof_type: string | null
+          proof_url: string | null
+          quiz_score: number | null
+          status: string
+          subject: string
+          task_type: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          chapter: string
+          completed_at?: string | null
+          created_at?: string
+          date: string
+          difficulty_justification?: string | null
+          difficulty_score?: number | null
+          difficulty_tier?: string | null
+          exam_id?: string | null
+          id?: string
+          points?: number
+          proof_type?: string | null
+          proof_url?: string | null
+          quiz_score?: number | null
+          status?: string
+          subject: string
+          task_type: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          chapter?: string
+          completed_at?: string | null
+          created_at?: string
+          date?: string
+          difficulty_justification?: string | null
+          difficulty_score?: number | null
+          difficulty_tier?: string | null
+          exam_id?: string | null
+          id?: string
+          points?: number
+          proof_type?: string | null
+          proof_url?: string | null
+          quiz_score?: number | null
+          status?: string
+          subject?: string
+          task_type?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "exams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          id?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
