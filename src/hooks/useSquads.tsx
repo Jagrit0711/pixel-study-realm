@@ -105,7 +105,7 @@ export const useSquads = () => {
 
     // Subscribe to squad member changes for real-time updates
     const channel = supabase
-      .channel('squad-changes')
+      .channel('squad-realtime')
       .on(
         'postgres_changes',
         {
@@ -129,6 +129,20 @@ export const useSquads = () => {
         },
         () => {
           // Refresh members when profiles update (for leaderboard)
+          if (currentSquadId) {
+            fetchSquadMembers(currentSquadId);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tasks'
+        },
+        () => {
+          // Refresh leaderboard when tasks complete (affects points)
           if (currentSquadId) {
             fetchSquadMembers(currentSquadId);
           }
@@ -177,12 +191,12 @@ export const useSquads = () => {
   const joinSquad = async (code: string) => {
     if (!user) return false;
 
-    // Find squad by code
-    const { data: squad, error: findError } = await supabase
-      .from('squads')
-      .select('id, name')
-      .eq('code', code.toUpperCase())
-      .maybeSingle();
+    // Find squad by code using security definer function
+    // Type assertion needed until types are regenerated
+    const { data: squadData, error: findError } = await (supabase
+      .rpc as any)('get_squad_by_code', { squad_code: code.toUpperCase() });
+
+    const squad = squadData?.[0];
 
     if (findError || !squad) {
       toast.error('Squad not found. Check the code and try again.');
