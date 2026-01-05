@@ -62,7 +62,7 @@ Respond in EXACTLY this JSON format (no markdown):
       throw new Error('AI service not configured');
     }
 
-    const response = await fetch('https://ai.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${lovableApiKey}`,
