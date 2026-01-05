@@ -313,6 +313,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_squad_by_code: {
+        Args: { squad_code: string }
+        Returns: {
+          id: string
+          name: string
+        }[]
+      }
       is_in_same_squad: { Args: { target_squad_id: string }; Returns: boolean }
     }
     Enums: {
