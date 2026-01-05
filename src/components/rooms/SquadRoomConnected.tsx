@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useSquads } from '@/hooks/useSquads';
+import { useSquadActivity } from '@/hooks/useSquadActivity';
 import { PixelPanel } from '../game/PixelPanel';
 import { PixelButton } from '../game/PixelButton';
 import { PixelInput } from '../game/PixelInput';
 import { PixelAvatar } from '../game/PixelAvatar';
+import { SquadActivityFeed } from './SquadActivityFeed';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Plus, LogOut, Copy, Check, Loader2, Crown, IndianRupee } from 'lucide-react';
+import { Users, Plus, LogOut, Copy, Check, Loader2, Crown, IndianRupee, Activity } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const SquadRoomConnected = () => {
@@ -25,6 +27,8 @@ export const SquadRoomConnected = () => {
     fetchSquadMembers
   } = useSquads();
 
+  const { activities, loading: activitiesLoading } = useSquadActivity(currentSquadId);
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [newSquadName, setNewSquadName] = useState('');
@@ -32,6 +36,7 @@ export const SquadRoomConnected = () => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
+  const [showActivityFeed, setShowActivityFeed] = useState(true);
 
   const currentSquad = squads.find(s => s.id === currentSquadId);
   const currentMembers = currentSquadId ? members[currentSquadId] || [] : [];
@@ -245,6 +250,32 @@ export const SquadRoomConnected = () => {
                   ))}
               </div>
             </PixelPanel>
+          </motion.div>
+        )}
+
+        {/* Activity Feed */}
+        {currentSquad && (
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="mt-6"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Activity className="w-5 h-5 text-primary" />
+                <h3 className="font-pixel text-xs text-foreground">Activity Feed</h3>
+              </div>
+              <PixelButton 
+                size="sm" 
+                variant="secondary"
+                onClick={() => setShowActivityFeed(!showActivityFeed)}
+              >
+                {showActivityFeed ? 'Hide' : 'Show'}
+              </PixelButton>
+            </div>
+            {showActivityFeed && (
+              <SquadActivityFeed activities={activities} loading={activitiesLoading} />
+            )}
           </motion.div>
         )}
       </div>
