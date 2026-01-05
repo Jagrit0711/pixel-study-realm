@@ -52,13 +52,13 @@ ${board ? `Board/Syllabus: ${board}` : ''}
 ${daysUntilExam !== null ? `Days until exam: ${daysUntilExam}` : ''}
 
 Consider these factors:
-1. Conceptual complexity of the subject and chapter
+1. Conceptual complexity of the specific chapter/topic regardless of subject
 2. Typical difficulty for students at this level
 3. Task type difficulty (problem-solving > practice > test-prep > revision > reading)
 4. Exam proximity pressure (closer = more urgent = harder mentally)
-5. Subject-specific factors (Physics/Math typically harder than English/History)
+5. Cognitive load and depth of understanding required
 
-IMPORTANT: Be strict and accurate. Physics chapters like mechanics, electromagnetism are harder than English grammar. JEE/NEET topics are harder than board exam topics.
+IMPORTANT: Be strict and accurate. Evaluate each topic on its own merit without subject bias. All subjects can have easy and difficult topics. JEE/NEET topics are harder than board exam topics.
 
 Respond in EXACTLY this JSON format (no markdown, no explanation):
 {
