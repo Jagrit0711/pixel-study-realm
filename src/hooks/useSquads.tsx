@@ -31,10 +31,22 @@ export const useSquads = () => {
   const [loading, setLoading] = useState(true);
   const [currentSquadId, setCurrentSquadId] = useState<string | null>(null);
 
+  // Activity logging helper
+  const logSquadActivity = async (squadId: string, activityType: string, activityData: Record<string, unknown>) => {
+    if (!user) return;
+    await (supabase as any)
+      .from('squad_activity')
+      .insert({
+        squad_id: squadId,
+        user_id: user.id,
+        activity_type: activityType,
+        activity_data: activityData
+      });
+  };
+
   const fetchSquads = async () => {
     if (!user) return;
 
-    // Get squads the user is a member of
     const { data: memberData, error: memberError } = await supabase
       .from('squad_members')
       .select('squad_id')
@@ -67,7 +79,6 @@ export const useSquads = () => {
   };
 
   const fetchSquadMembers = async (squadId: string) => {
-    // First get the squad members
     const { data: membersData, error: membersError } = await supabase
       .from('squad_members')
       .select('*')
@@ -78,20 +89,29 @@ export const useSquads = () => {
       return;
     }
 
-    // Then fetch profiles for those members
     const userIds = membersData.map(m => m.user_id);
     const { data: profilesData } = await supabase
       .from('profiles')
       .select('user_id, name, avatar_seed, total_points, current_streak')
       .in('user_id', userIds);
 
-    // Combine the data
     const membersWithProfiles: SquadMember[] = membersData.map(member => ({
       ...member,
       profile: profilesData?.find(p => p.user_id === member.user_id)
     }));
 
     setMembers(prev => ({ ...prev, [squadId]: membersWithProfiles }));
+  };
+
+  // Helper to get profile info for activity logging
+  const getProfileInfo = async () => {
+    if (!user) return { name: 'Unknown', avatar_seed: 'default' };
+    const { data } = await supabase
+      .from('profiles')
+      .select('name, avatar_seed')
+      .eq('user_id', user.id)
+      .single();
+    return data || { name: 'Unknown', avatar_seed: 'default' };
   };
 
   useEffect(() => {
@@ -103,49 +123,28 @@ export const useSquads = () => {
 
     fetchSquads();
 
-    // Subscribe to squad member changes for real-time updates
     const channel = supabase
       .channel('squad-realtime')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'squad_members'
-        },
+        { event: '*', schema: 'public', table: 'squad_members' },
         () => {
           fetchSquads();
-          if (currentSquadId) {
-            fetchSquadMembers(currentSquadId);
-          }
+          if (currentSquadId) fetchSquadMembers(currentSquadId);
         }
       )
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'profiles'
-        },
+        { event: '*', schema: 'public', table: 'profiles' },
         () => {
-          // Refresh members when profiles update (for leaderboard)
-          if (currentSquadId) {
-            fetchSquadMembers(currentSquadId);
-          }
+          if (currentSquadId) fetchSquadMembers(currentSquadId);
         }
       )
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'tasks'
-        },
+        { event: '*', schema: 'public', table: 'tasks' },
         () => {
-          // Refresh leaderboard when tasks complete (affects points)
-          if (currentSquadId) {
-            fetchSquadMembers(currentSquadId);
-          }
+          if (currentSquadId) fetchSquadMembers(currentSquadId);
         }
       )
       .subscribe();
@@ -174,7 +173,6 @@ export const useSquads = () => {
       return null;
     }
 
-    // Add creator as member
     const { error: memberError } = await supabase
       .from('squad_members')
       .insert({ squad_id: squad.id, user_id: user.id });
@@ -182,6 +180,13 @@ export const useSquads = () => {
     if (memberError) {
       console.error('Failed to add creator as member:', memberError);
     }
+
+    // Log activity
+    const profile = await getProfileInfo();
+    await logSquadActivity(squad.id, 'joined', {
+      user_name: profile.name,
+      avatar_seed: profile.avatar_seed
+    });
 
     toast.success(`Squad "${name}" created!`);
     await fetchSquads();
@@ -191,10 +196,10 @@ export const useSquads = () => {
   const joinSquad = async (code: string) => {
     if (!user) return false;
 
-    // Find squad by code using security definer function
-    // Type assertion needed until types are regenerated
-    const { data: squadData, error: findError } = await (supabase
-      .rpc as any)('get_squad_by_code', { squad_code: code.toUpperCase() });
+    const { data: squadData, error: findError } = await (supabase.rpc as any)(
+      'get_squad_by_code', 
+      { squad_code: code.toUpperCase() }
+    );
 
     const squad = squadData?.[0];
 
@@ -203,7 +208,6 @@ export const useSquads = () => {
       return false;
     }
 
-    // Check if already a member
     const { data: existing } = await supabase
       .from('squad_members')
       .select('id')
@@ -216,7 +220,6 @@ export const useSquads = () => {
       return false;
     }
 
-    // Check member count
     const { count } = await supabase
       .from('squad_members')
       .select('*', { count: 'exact', head: true })
@@ -227,7 +230,6 @@ export const useSquads = () => {
       return false;
     }
 
-    // Join squad
     const { error: joinError } = await supabase
       .from('squad_members')
       .insert({ squad_id: squad.id, user_id: user.id });
@@ -236,6 +238,13 @@ export const useSquads = () => {
       toast.error('Failed to join squad');
       return false;
     }
+
+    // Log activity
+    const profile = await getProfileInfo();
+    await logSquadActivity(squad.id, 'joined', {
+      user_name: profile.name,
+      avatar_seed: profile.avatar_seed
+    });
 
     toast.success(`Joined "${squad.name}"!`);
     await fetchSquads();
@@ -271,6 +280,8 @@ export const useSquads = () => {
     createSquad,
     joinSquad,
     leaveSquad,
-    fetchSquadMembers
+    fetchSquadMembers,
+    logSquadActivity,
+    getProfileInfo
   };
 };

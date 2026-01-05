@@ -1,1 +1,10 @@
 project_id = "ntxikaqokialuedcbidr"
+
+[functions.analyze-difficulty]
+verify_jwt = false
+
+[functions.generate-quiz]
+verify_jwt = false
+
+[functions.generate-report]
+verify_jwt = false
