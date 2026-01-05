@@ -2,11 +2,11 @@ import { useGameStore } from '@/store/gameStore';
 import { GameHUD } from '@/components/game/GameHUD';
 import { GameNav } from '@/components/game/GameNav';
 import { GameBackground } from '@/components/game/GameBackground';
-import { HubRoom } from '@/components/rooms/HubRoom';
-import { SquadRoom } from '@/components/rooms/SquadRoom';
-import { QuestBoardRoom } from '@/components/rooms/QuestBoardRoom';
-import { ExamRoom } from '@/components/rooms/ExamRoom';
-import { ProfileRoom } from '@/components/rooms/ProfileRoom';
+import { HubRoomConnected } from '@/components/rooms/HubRoomConnected';
+import { SquadRoomConnected } from '@/components/rooms/SquadRoomConnected';
+import { QuestBoardRoomConnected } from '@/components/rooms/QuestBoardRoomConnected';
+import { ExamRoomConnected } from '@/components/rooms/ExamRoomConnected';
+import { ProfileRoomConnected } from '@/components/rooms/ProfileRoomConnected';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 
@@ -16,17 +16,17 @@ const Index = () => {
   const renderRoom = () => {
     switch (currentRoom) {
       case 'hub':
-        return <HubRoom />;
+        return <HubRoomConnected />;
       case 'squad':
-        return <SquadRoom />;
+        return <SquadRoomConnected />;
       case 'quest-board':
-        return <QuestBoardRoom />;
+        return <QuestBoardRoomConnected />;
       case 'exam-room':
-        return <ExamRoom />;
+        return <ExamRoomConnected />;
       case 'profile':
-        return <ProfileRoom />;
+        return <ProfileRoomConnected />;
       default:
-        return <HubRoom />;
+        return <HubRoomConnected />;
     }
   };
 
