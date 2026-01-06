@@ -112,6 +112,8 @@ export type Database = {
           amount_owed: number
           amount_to_receive: number
           avatar_seed: string
+          board: string | null
+          class: string | null
           created_at: string
           current_streak: number
           exp: number
@@ -127,6 +129,8 @@ export type Database = {
           amount_owed?: number
           amount_to_receive?: number
           avatar_seed?: string
+          board?: string | null
+          class?: string | null
           created_at?: string
           current_streak?: number
           exp?: number
@@ -142,6 +146,8 @@ export type Database = {
           amount_owed?: number
           amount_to_receive?: number
           avatar_seed?: string
+          board?: string | null
+          class?: string | null
           created_at?: string
           current_streak?: number
           exp?: number
@@ -154,6 +160,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      proof_reviews: {
+        Row: {
+          ai_rejection_approved: boolean | null
+          created_at: string
+          id: string
+          rejection_reason: string | null
+          reviewer_id: string
+          status: string
+          task_id: string
+          updated_at: string
+        }
+        Insert: {
+          ai_rejection_approved?: boolean | null
+          created_at?: string
+          id?: string
+          rejection_reason?: string | null
+          reviewer_id: string
+          status?: string
+          task_id: string
+          updated_at?: string
+        }
+        Update: {
+          ai_rejection_approved?: boolean | null
+          created_at?: string
+          id?: string
+          rejection_reason?: string | null
+          reviewer_id?: string
+          status?: string
+          task_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proof_reviews_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       squad_activity: {
         Row: {
@@ -252,6 +299,7 @@ export type Database = {
           difficulty_justification: string | null
           difficulty_score: number | null
           difficulty_tier: string | null
+          estimated_minutes: number | null
           exam_id: string | null
           id: string
           points: number
@@ -272,6 +320,7 @@ export type Database = {
           difficulty_justification?: string | null
           difficulty_score?: number | null
           difficulty_tier?: string | null
+          estimated_minutes?: number | null
           exam_id?: string | null
           id?: string
           points?: number
@@ -292,6 +341,7 @@ export type Database = {
           difficulty_justification?: string | null
           difficulty_score?: number | null
           difficulty_tier?: string | null
+          estimated_minutes?: number | null
           exam_id?: string | null
           id?: string
           points?: number

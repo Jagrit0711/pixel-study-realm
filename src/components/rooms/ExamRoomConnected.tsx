@@ -116,7 +116,6 @@ export const ExamRoomConnected = () => {
                 >
                   <PixelPanel
                     variant={countdown.passed ? 'default' : 'wood'}
-                    className={countdown.passed ? 'opacity-60' : ''}
                   >
                     {isEditing ? (
                       <div className="space-y-3">
@@ -143,10 +142,10 @@ export const ExamRoomConnected = () => {
                       <>
                         <div className="flex items-start justify-between mb-4">
                           <div>
-                            <h3 className="font-pixel text-sm text-primary-foreground">{exam.name}</h3>
+                            <h3 className="font-pixel text-sm text-foreground">{exam.name}</h3>
                             <div className="flex items-center gap-2 mt-1">
-                              <Calendar className="w-4 h-4 text-primary-foreground/60" />
-                              <span className="font-game text-lg text-primary-foreground/80">
+                              <Calendar className="w-4 h-4 text-muted-foreground" />
+                              <span className="font-game text-lg text-muted-foreground">
                                 {new Date(exam.start_date).toLocaleDateString('en', {
                                   weekday: 'short',
                                   month: 'short',
@@ -167,24 +166,24 @@ export const ExamRoomConnected = () => {
                         </div>
 
                         {/* Countdown */}
-                        <div className="bg-card/20 p-4 pixel-border">
+                        <div className="bg-card/40 p-4 pixel-border">
                           <div className="flex items-center gap-2 mb-2">
                             <Clock className="w-5 h-5 text-game-gold" />
-                            <span className="font-pixel text-[8px] text-primary-foreground/60">
+                            <span className="font-pixel text-[8px] text-muted-foreground">
                               {countdown.passed ? 'EXAM PASSED' : 'TIME REMAINING'}
                             </span>
                           </div>
                           {countdown.passed ? (
-                            <p className="font-game text-2xl text-primary-foreground/60">Completed</p>
+                            <p className="font-game text-2xl text-muted-foreground">Completed</p>
                           ) : (
                             <div className="flex items-end gap-4">
                               <div>
                                 <span className="font-pixel text-2xl text-game-gold">{countdown.days}</span>
-                                <span className="font-pixel text-[10px] text-primary-foreground/60 ml-1">DAYS</span>
+                                <span className="font-pixel text-[10px] text-muted-foreground ml-1">DAYS</span>
                               </div>
                               <div>
                                 <span className="font-pixel text-2xl text-game-gold">{countdown.hours}</span>
-                                <span className="font-pixel text-[10px] text-primary-foreground/60 ml-1">HRS</span>
+                                <span className="font-pixel text-[10px] text-muted-foreground ml-1">HRS</span>
                               </div>
                             </div>
                           )}

@@ -10,7 +10,7 @@ import { PixelSelect } from '../game/PixelSelect';
 import { QuizModal } from '../verification/QuizModal';
 import { ProofUploadModal } from '../verification/ProofUploadModal';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ScrollText, Plus, Lock, Unlock, CheckCircle, Circle, Trash2, AlertTriangle, Upload, BookOpen, Loader2, IndianRupee } from 'lucide-react';
+import { ScrollText, Plus, Lock, Unlock, CheckCircle, Circle, Trash2, AlertTriangle, Upload, BookOpen, Loader2, IndianRupee, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 
 const taskTypes = [
@@ -47,6 +47,7 @@ export const QuestBoardRoomConnected = () => {
     chapter: '',
     taskType: 'reading' as Task['task_type'],
     examId: '',
+    estimatedMinutes: 30,
   });
   const [analyzedDifficulty, setAnalyzedDifficulty] = useState<DifficultyResult | null>(null);
 
@@ -83,7 +84,10 @@ export const QuestBoardRoomConnected = () => {
       newTask.chapter,
       newTask.taskType,
       exam?.name,
-      exam?.start_date
+      exam?.start_date,
+      profile?.board || undefined,
+      profile?.class || undefined,
+      newTask.estimatedMinutes
     );
 
     if (result) {
@@ -111,10 +115,11 @@ export const QuestBoardRoomConnected = () => {
       date: selectedDate,
       exam_id: newTask.examId || undefined,
       difficulty: analyzedDifficulty,
+      estimated_minutes: newTask.estimatedMinutes,
     });
 
     setShowAddModal(false);
-    setNewTask({ title: '', subject: '', chapter: '', taskType: 'reading', examId: '' });
+    setNewTask({ title: '', subject: '', chapter: '', taskType: 'reading', examId: '', estimatedMinutes: 30 });
     setAnalyzedDifficulty(null);
   };
 
@@ -431,6 +436,29 @@ export const QuestBoardRoomConnected = () => {
                         setAnalyzedDifficulty(null);
                       }}
                       options={taskTypes}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-pixel text-[8px] text-muted-foreground block mb-2">
+                      ESTIMATED TIME (minutes)
+                    </label>
+                    <PixelSelect
+                      value={String(newTask.estimatedMinutes)}
+                      onChange={(e) => {
+                        setNewTask(p => ({ ...p, estimatedMinutes: parseInt(e.target.value) }));
+                        setAnalyzedDifficulty(null);
+                      }}
+                      options={[
+                        { value: '15', label: '15 min' },
+                        { value: '30', label: '30 min' },
+                        { value: '45', label: '45 min' },
+                        { value: '60', label: '1 hour' },
+                        { value: '90', label: '1.5 hours' },
+                        { value: '120', label: '2 hours' },
+                        { value: '180', label: '3 hours' },
+                        { value: '240', label: '4+ hours' },
+                      ]}
                     />
                   </div>
 

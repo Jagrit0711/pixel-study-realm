@@ -15,6 +15,8 @@ export interface Profile {
   exp: number;
   amount_owed: number;
   amount_to_receive: number;
+  board?: string | null;
+  class?: string | null;
 }
 
 export const useProfile = () => {

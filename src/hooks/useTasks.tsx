@@ -16,12 +16,13 @@ export interface Task {
   difficulty_score?: number;
   points: number;
   difficulty_justification?: string;
-  status: 'planned' | 'locked' | 'completed' | 'missed';
+  status: 'planned' | 'locked' | 'completed' | 'missed' | 'pending_review';
   proof_url?: string;
   proof_type?: 'upload' | 'quiz';
   quiz_score?: number;
   completed_at?: string;
   created_at: string;
+  estimated_minutes?: number;
 }
 
 export interface DifficultyResult {
@@ -90,13 +91,16 @@ export const useTasks = () => {
     chapter: string,
     taskType: string,
     examName?: string,
-    examDate?: string
+    examDate?: string,
+    board?: string,
+    classLevel?: string,
+    estimatedMinutes?: number
   ): Promise<DifficultyResult | null> => {
     setAnalyzingDifficulty(true);
     
     try {
       const { data, error } = await supabase.functions.invoke('analyze-difficulty', {
-        body: { subject, chapter, taskType, examName, examDate }
+        body: { subject, chapter, taskType, examName, examDate, board, classLevel, estimatedMinutes }
       });
 
       if (error) throw error;
@@ -124,6 +128,7 @@ export const useTasks = () => {
     date: string;
     exam_id?: string;
     difficulty: DifficultyResult;
+    estimated_minutes?: number;
   }) => {
     if (!user) return null;
 
@@ -141,7 +146,8 @@ export const useTasks = () => {
         difficulty_score: task.difficulty.score,
         points: task.difficulty.points,
         difficulty_justification: task.difficulty.justification,
-        status: 'planned'
+        status: 'planned',
+        estimated_minutes: task.estimated_minutes || 30
       })
       .select()
       .single();
@@ -152,8 +158,46 @@ export const useTasks = () => {
       return null;
     }
 
+    // Log activity to squad if user is in a squad
+    await logTaskActivity('task_scheduled', data as Task);
+
     toast.success('Quest added!');
     return data;
+  };
+
+  const logTaskActivity = async (type: 'task_scheduled' | 'task_completed', task: Task) => {
+    if (!user) return;
+
+    // Get user's profile for name and avatar
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name, avatar_seed')
+      .eq('user_id', user.id)
+      .single();
+
+    // Get user's squad memberships
+    const { data: squadMemberships } = await supabase
+      .from('squad_members')
+      .select('squad_id')
+      .eq('user_id', user.id);
+
+    if (!squadMemberships || squadMemberships.length === 0) return;
+
+    // Log activity to all squads
+    const activityInserts = squadMemberships.map(sm => ({
+      squad_id: sm.squad_id,
+      user_id: user.id,
+      activity_type: type,
+      activity_data: {
+        user_name: profile?.name || 'Unknown',
+        avatar_seed: profile?.avatar_seed || 'default',
+        task_title: task.title,
+        points: task.points,
+        subject: task.subject,
+      }
+    }));
+
+    await supabase.from('squad_activity').insert(activityInserts);
   };
 
   const updateTask = async (taskId: string, updates: Partial<Task>) => {
@@ -188,10 +232,14 @@ export const useTasks = () => {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
 
+    // For quiz completion, mark as completed immediately
+    // For upload, mark as pending_review (squad member will verify)
+    const newStatus = proofType === 'quiz' ? 'completed' : 'pending_review';
+
     const { error } = await supabase
       .from('tasks')
       .update({
-        status: 'completed',
+        status: newStatus,
         proof_type: proofType,
         proof_url: proofUrl,
         quiz_score: quizScore,
@@ -204,7 +252,19 @@ export const useTasks = () => {
       return;
     }
 
-    // Update profile points
+    // Only award points for quiz completion (upload needs squad review)
+    if (proofType === 'quiz') {
+      await awardTaskPoints(task);
+      await logTaskActivity('task_completed', task);
+      toast.success(`Quest completed! +${task.points} points`);
+    } else {
+      toast.success('Proof uploaded! Waiting for squad member review.');
+    }
+  };
+
+  const awardTaskPoints = async (task: Task) => {
+    if (!user) return;
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('total_points, exp, level')
@@ -232,8 +292,6 @@ export const useTasks = () => {
         })
         .eq('user_id', user.id);
     }
-
-    toast.success(`Quest completed! +${task.points} points`);
   };
 
   const uploadProof = async (taskId: string, file: File) => {

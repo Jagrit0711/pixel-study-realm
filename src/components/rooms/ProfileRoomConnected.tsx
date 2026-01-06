@@ -11,8 +11,9 @@ import { PixelInput } from '../game/PixelInput';
 import { PixelAvatar } from '../game/PixelAvatar';
 import { PixelBar } from '../game/PixelBar';
 import { motion } from 'framer-motion';
-import { User, Edit2, Check, Star, Flame, Trophy, Target, Award, IndianRupee, LogOut, Loader2 } from 'lucide-react';
+import { User, Edit2, Check, Star, Flame, Trophy, Target, Award, IndianRupee, LogOut, Loader2, GraduationCap, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { PixelSelect } from '../game/PixelSelect';
 
 export const ProfileRoomConnected = () => {
   const { user, signOut } = useAuth();
@@ -23,7 +24,10 @@ export const ProfileRoomConnected = () => {
   const { achievements, userAchievements } = useAchievements();
 
   const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditingEducation, setIsEditingEducation] = useState(false);
   const [tempName, setTempName] = useState(profile?.name || '');
+  const [tempBoard, setTempBoard] = useState(profile?.board || '');
+  const [tempClass, setTempClass] = useState(profile?.class || '');
 
   if (loading || !profile) {
     return (
@@ -51,6 +55,15 @@ export const ProfileRoomConnected = () => {
     setIsEditingName(false);
   };
 
+  const handleSaveEducation = async () => {
+    await updateProfile({ 
+      board: tempBoard || null, 
+      class: tempClass || null 
+    } as any);
+    setIsEditingEducation(false);
+    toast.success('Education details saved!');
+  };
+
   const generateNewAvatar = async () => {
     const newSeed = Math.random().toString(36).substring(2, 10);
     await updateProfile({ avatar_seed: newSeed });
@@ -65,6 +78,14 @@ export const ProfileRoomConnected = () => {
     { icon: Trophy, label: 'Best Streak', value: profile.longest_streak, color: 'text-game-energy' },
     { icon: Award, label: 'Exams Tracked', value: exams.length, color: 'text-game-exp' },
     { icon: User, label: 'Squads Joined', value: squads.length, color: 'text-primary' },
+  ];
+
+  const boardOptions = [
+    'CBSE', 'ICSE', 'State Board', 'IB', 'Cambridge', 'Other'
+  ];
+
+  const classOptions = [
+    'Class 9', 'Class 10', 'Class 11', 'Class 12', 'Dropper', 'College'
   ];
 
   return (
@@ -150,6 +171,81 @@ export const ProfileRoomConnected = () => {
                 </div>
               </div>
             </div>
+          </PixelPanel>
+        </motion.div>
+
+        {/* Education Details */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.05 }}
+        >
+          <PixelPanel>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <GraduationCap className="w-5 h-5 text-primary" />
+                <h3 className="font-pixel text-sm text-foreground">Education Details</h3>
+              </div>
+              {!isEditingEducation ? (
+                <PixelButton size="sm" variant="secondary" onClick={() => {
+                  setTempBoard(profile.board || '');
+                  setTempClass(profile.class || '');
+                  setIsEditingEducation(true);
+                }}>
+                  <Edit2 className="w-4 h-4" />
+                </PixelButton>
+              ) : (
+                <div className="flex gap-2">
+                  <PixelButton size="sm" onClick={handleSaveEducation}>
+                    <Check className="w-4 h-4" />
+                  </PixelButton>
+                  <PixelButton size="sm" variant="secondary" onClick={() => setIsEditingEducation(false)}>
+                    <X className="w-4 h-4" />
+                  </PixelButton>
+                </div>
+              )}
+            </div>
+            
+            {isEditingEducation ? (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="font-pixel text-[8px] text-muted-foreground block mb-2">BOARD</label>
+                  <PixelSelect
+                    value={tempBoard}
+                    onChange={(e) => setTempBoard(e.target.value)}
+                    options={[
+                      { value: '', label: 'Select Board' },
+                      ...boardOptions.map(b => ({ value: b, label: b }))
+                    ]}
+                  />
+                </div>
+                <div>
+                  <label className="font-pixel text-[8px] text-muted-foreground block mb-2">CLASS</label>
+                  <PixelSelect
+                    value={tempClass}
+                    onChange={(e) => setTempClass(e.target.value)}
+                    options={[
+                      { value: '', label: 'Select Class' },
+                      ...classOptions.map(c => ({ value: c, label: c }))
+                    ]}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-card/30 p-3 pixel-border">
+                  <p className="font-pixel text-[8px] text-muted-foreground mb-1">BOARD</p>
+                  <p className="font-game text-xl text-foreground">{profile.board || 'Not set'}</p>
+                </div>
+                <div className="bg-card/30 p-3 pixel-border">
+                  <p className="font-pixel text-[8px] text-muted-foreground mb-1">CLASS</p>
+                  <p className="font-game text-xl text-foreground">{profile.class || 'Not set'}</p>
+                </div>
+              </div>
+            )}
+            <p className="font-game text-sm text-muted-foreground mt-3">
+              This helps AI analyze difficulty more accurately for your level.
+            </p>
           </PixelPanel>
         </motion.div>
 
