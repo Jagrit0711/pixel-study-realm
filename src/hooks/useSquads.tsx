@@ -114,37 +114,51 @@ export const useSquads = () => {
     return data || { name: 'Unknown', avatar_seed: 'default' };
   };
 
+  // Fetch squads on mount
   useEffect(() => {
     if (!user) {
       setSquads([]);
       setLoading(false);
       return;
     }
-
     fetchSquads();
+  }, [user]);
+
+  // Subscribe to squad member changes
+  useEffect(() => {
+    if (!user) return;
 
     const channel = supabase
-      .channel('squad-realtime')
+      .channel('squad-members-realtime')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'squad_members' },
         () => {
           fetchSquads();
-          if (currentSquadId) fetchSquadMembers(currentSquadId);
         }
       )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  // Subscribe to profile changes for current squad - refetch members when profiles update
+  useEffect(() => {
+    if (!user || !currentSquadId) return;
+
+    // Fetch members immediately when squad is selected
+    fetchSquadMembers(currentSquadId);
+
+    const channel = supabase
+      .channel(`squad-profiles-${currentSquadId}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'profiles' },
+        { event: 'UPDATE', schema: 'public', table: 'profiles' },
         () => {
-          if (currentSquadId) fetchSquadMembers(currentSquadId);
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'tasks' },
-        () => {
-          if (currentSquadId) fetchSquadMembers(currentSquadId);
+          // Refetch squad members when any profile is updated
+          fetchSquadMembers(currentSquadId);
         }
       )
       .subscribe();
