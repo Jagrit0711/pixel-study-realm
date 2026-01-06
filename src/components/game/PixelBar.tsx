@@ -40,7 +40,14 @@ export const PixelBar = ({
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-        />
+        >
+          {/* Shimmer effect */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+            animate={{ x: ['-100%', '200%'] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'linear', repeatDelay: 1 }}
+          />
+        </motion.div>
         <div className="absolute inset-0 pixel-inset pointer-events-none" />
         {showText && (
           <span className="absolute inset-0 flex items-center justify-center font-game text-sm text-foreground">

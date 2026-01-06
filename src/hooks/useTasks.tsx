@@ -29,6 +29,7 @@ export interface DifficultyResult {
   tier: 'Easy' | 'Medium' | 'Hard' | 'Very Hard';
   score: number;
   points: number;
+  estimatedMinutes: number;
   justification: string;
 }
 
@@ -93,14 +94,13 @@ export const useTasks = () => {
     examName?: string,
     examDate?: string,
     board?: string,
-    classLevel?: string,
-    estimatedMinutes?: number
+    classLevel?: string
   ): Promise<DifficultyResult | null> => {
     setAnalyzingDifficulty(true);
     
     try {
       const { data, error } = await supabase.functions.invoke('analyze-difficulty', {
-        body: { subject, chapter, taskType, examName, examDate, board, classLevel, estimatedMinutes }
+        body: { subject, chapter, taskType, examName, examDate, board, classLevel }
       });
 
       if (error) throw error;
@@ -128,7 +128,6 @@ export const useTasks = () => {
     date: string;
     exam_id?: string;
     difficulty: DifficultyResult;
-    estimated_minutes?: number;
   }) => {
     if (!user) return null;
 
@@ -147,7 +146,7 @@ export const useTasks = () => {
         points: task.difficulty.points,
         difficulty_justification: task.difficulty.justification,
         status: 'planned',
-        estimated_minutes: task.estimated_minutes || 30
+        estimated_minutes: task.difficulty.estimatedMinutes || 30
       })
       .select()
       .single();

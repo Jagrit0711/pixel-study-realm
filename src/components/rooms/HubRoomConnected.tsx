@@ -97,59 +97,89 @@ export const HubRoomConnected = () => {
           transition={{ delay: 0.2 }}
           className="grid grid-cols-1 md:grid-cols-3 gap-4"
         >
-          <PixelPanel 
-            className="flex flex-col items-center text-center gap-4 hover:brightness-105 transition-all cursor-pointer" 
-            onClick={() => setCurrentRoom('quest-board')}
+          <motion.div
+            whileHover={{ y: -6, scale: 1.02 }}
+            transition={{ type: 'spring', stiffness: 400 }}
           >
-            <Target className="w-12 h-12 text-primary" />
-            <div>
-              <h3 className="font-pixel text-[10px] text-foreground mb-1">TODAY'S QUESTS</h3>
-              <p className="font-game text-3xl text-primary">{completedToday}/{todayTasks.length}</p>
-            </div>
-            <PixelButton size="sm" onClick={() => setCurrentRoom('quest-board')}>
-              View Quests
-            </PixelButton>
-          </PixelPanel>
-
-          <PixelPanel 
-            className="flex flex-col items-center text-center gap-4 hover:brightness-105 transition-all cursor-pointer" 
-            onClick={() => setCurrentRoom('exam-room')}
-          >
-            <Clock className="w-12 h-12 text-accent" />
-            <div>
-              <h3 className="font-pixel text-[10px] text-foreground mb-1">NEXT EXAM</h3>
-              {upcomingExams.length > 0 ? (
-                <>
-                  <p className="font-game text-xl text-foreground">{upcomingExams[0].name}</p>
-                  <p className="font-game text-lg text-muted-foreground">
-                    {Math.ceil((new Date(upcomingExams[0].start_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} days
-                  </p>
-                </>
-              ) : (
-                <p className="font-game text-lg text-muted-foreground">No exams set</p>
-              )}
-            </div>
-            <PixelButton size="sm" variant="accent" onClick={() => setCurrentRoom('exam-room')}>
-              Manage Exams
-            </PixelButton>
-          </PixelPanel>
-
-          <PixelPanel 
-            className="flex flex-col items-center text-center gap-4 hover:brightness-105 transition-all cursor-pointer" 
-            onClick={() => setCurrentRoom('squad')}
-          >
-            <Trophy className="w-12 h-12 text-game-gold" />
-            <div>
-              <h3 className="font-pixel text-[10px] text-foreground mb-1">YOUR BALANCE</h3>
-              <div className="flex items-center justify-center gap-1">
-                <IndianRupee className="w-5 h-5 text-game-gold" />
-                <p className="font-game text-3xl text-game-gold">{profile.total_points}</p>
+            <PixelPanel 
+              className="flex flex-col items-center text-center gap-4 cursor-pointer h-full" 
+              onClick={() => setCurrentRoom('quest-board')}
+            >
+              <motion.div
+                animate={{ y: [0, -4, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <Target className="w-12 h-12 text-primary" />
+              </motion.div>
+              <div>
+                <h3 className="font-pixel text-[10px] text-foreground mb-1">TODAY'S QUESTS</h3>
+                <p className="font-game text-3xl text-primary">{completedToday}/{todayTasks.length}</p>
               </div>
-            </div>
-            <PixelButton size="sm" variant="gold" onClick={() => setCurrentRoom('squad')}>
-              View Squad
-            </PixelButton>
-          </PixelPanel>
+              <PixelButton size="sm" onClick={() => setCurrentRoom('quest-board')}>
+                View Quests
+              </PixelButton>
+            </PixelPanel>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ y: -6, scale: 1.02 }}
+            transition={{ type: 'spring', stiffness: 400 }}
+          >
+            <PixelPanel 
+              className="flex flex-col items-center text-center gap-4 cursor-pointer h-full" 
+              onClick={() => setCurrentRoom('exam-room')}
+            >
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <Clock className="w-12 h-12 text-accent" />
+              </motion.div>
+              <div>
+                <h3 className="font-pixel text-[10px] text-foreground mb-1">NEXT EXAM</h3>
+                {upcomingExams.length > 0 ? (
+                  <>
+                    <p className="font-game text-xl text-foreground">{upcomingExams[0].name}</p>
+                    <p className="font-game text-lg text-muted-foreground">
+                      {Math.ceil((new Date(upcomingExams[0].start_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} days
+                    </p>
+                  </>
+                ) : (
+                  <p className="font-game text-lg text-muted-foreground">No exams set</p>
+                )}
+              </div>
+              <PixelButton size="sm" variant="accent" onClick={() => setCurrentRoom('exam-room')}>
+                Manage Exams
+              </PixelButton>
+            </PixelPanel>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ y: -6, scale: 1.02 }}
+            transition={{ type: 'spring', stiffness: 400 }}
+          >
+            <PixelPanel 
+              className="flex flex-col items-center text-center gap-4 cursor-pointer h-full" 
+              onClick={() => setCurrentRoom('squad')}
+            >
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <Trophy className="w-12 h-12 text-game-gold" />
+              </motion.div>
+              <div>
+                <h3 className="font-pixel text-[10px] text-foreground mb-1">YOUR BALANCE</h3>
+                <div className="flex items-center justify-center gap-1">
+                  <IndianRupee className="w-5 h-5 text-game-gold" />
+                  <p className="font-game text-3xl text-game-gold">{profile.total_points}</p>
+                </div>
+              </div>
+              <PixelButton size="sm" variant="gold" onClick={() => setCurrentRoom('squad')}>
+                View Squad
+              </PixelButton>
+            </PixelPanel>
+          </motion.div>
         </motion.div>
 
         {/* Player Card */}
