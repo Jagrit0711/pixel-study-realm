@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PixelPanel } from '../game/PixelPanel';
 import { PixelAvatar } from '../game/PixelAvatar';
 import { SquadActivity } from '@/hooks/useSquadActivity';
-import { UserPlus, CheckCircle, Flame, ArrowUp, Loader2, Calendar } from 'lucide-react';
+import { UserPlus, CheckCircle, Flame, ArrowUp, Loader2, Calendar, XCircle, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface SquadActivityFeedProps {
@@ -22,6 +22,8 @@ const getActivityIcon = (type: SquadActivity['activity_type']) => {
       return <Flame className="w-4 h-4 text-game-fire" />;
     case 'level_up':
       return <ArrowUp className="w-4 h-4 text-game-gold" />;
+    case 'proof_rejected':
+      return <XCircle className="w-4 h-4 text-destructive" />;
     default:
       return null;
   }
@@ -51,6 +53,17 @@ const getActivityMessage = (activity: SquadActivity) => {
           {activity.activity_data.points && (
             <span className="text-game-gold"> (+{activity.activity_data.points} pts)</span>
           )}
+          {activity.activity_data.auto_approved && (
+            <span className="text-muted-foreground"> (auto-approved)</span>
+          )}
+        </>
+      );
+    case 'proof_rejected':
+      return (
+        <>
+          <span className="text-primary">{activity.activity_data.reviewer_name || 'A reviewer'}</span> rejected{' '}
+          <span className="text-destructive">"{activity.activity_data.task_title}"</span>
+          {' '}by <span className="text-primary">{name}</span>
         </>
       );
     case 'streak_milestone':

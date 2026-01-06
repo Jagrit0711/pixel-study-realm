@@ -74,16 +74,38 @@ export const useProofReviews = () => {
       return;
     }
 
+    // Check for auto-approval (tasks pending for more than 24 hours)
+    const now = new Date();
+    const autoApproveTasks = (tasks || []).filter(task => {
+      if (task.completed_at) {
+        const completedAt = new Date(task.completed_at);
+        const hoursSinceCompletion = (now.getTime() - completedAt.getTime()) / (1000 * 60 * 60);
+        return hoursSinceCompletion >= 24;
+      }
+      return false;
+    });
+
+    // Auto-approve tasks older than 24 hours
+    for (const task of autoApproveTasks) {
+      await autoApproveTask(task as PendingProofTask);
+    }
+
     // Get profiles for task owners
-    const ownerIds = [...new Set((tasks || []).map(t => t.user_id))];
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('user_id, name, avatar_seed')
-      .in('user_id', ownerIds);
+    const remainingTasks = (tasks || []).filter(t => !autoApproveTasks.some(at => at.id === t.id));
+    const ownerIds = [...new Set(remainingTasks.map(t => t.user_id))];
+    
+    let profiles: any[] = [];
+    if (ownerIds.length > 0) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('user_id, name, avatar_seed')
+        .in('user_id', ownerIds);
+      profiles = data || [];
+    }
 
-    const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+    const profileMap = new Map(profiles.map(p => [p.user_id, p]));
 
-    const enrichedTasks: PendingProofTask[] = (tasks || []).map(task => ({
+    const enrichedTasks: PendingProofTask[] = remainingTasks.map(task => ({
       ...task,
       owner_name: profileMap.get(task.user_id)?.name,
       owner_avatar: profileMap.get(task.user_id)?.avatar_seed,
@@ -91,6 +113,81 @@ export const useProofReviews = () => {
 
     setPendingTasks(enrichedTasks);
     setLoading(false);
+  };
+
+  const autoApproveTask = async (task: PendingProofTask) => {
+    // Update task status to completed
+    const { error: taskError } = await supabase
+      .from('tasks')
+      .update({ status: 'completed' })
+      .eq('id', task.id);
+
+    if (taskError) {
+      console.error('Failed to auto-approve task:', taskError);
+      return;
+    }
+
+    // Award points to task owner
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('total_points, exp, level')
+      .eq('user_id', task.user_id)
+      .single();
+
+    if (profile) {
+      const newPoints = profile.total_points + task.points;
+      const newExp = profile.exp + task.points;
+      const expForNextLevel = profile.level * 100;
+      let newLevel = profile.level;
+      let remainingExp = newExp;
+
+      while (remainingExp >= expForNextLevel) {
+        remainingExp -= expForNextLevel;
+        newLevel++;
+      }
+
+      await supabase
+        .from('profiles')
+        .update({
+          total_points: newPoints,
+          exp: remainingExp,
+          level: newLevel
+        })
+        .eq('user_id', task.user_id);
+    }
+
+    // Log activity as auto-approved
+    await logAutoApproveActivity(task);
+  };
+
+  const logAutoApproveActivity = async (task: PendingProofTask) => {
+    const { data: ownerProfile } = await supabase
+      .from('profiles')
+      .select('name, avatar_seed')
+      .eq('user_id', task.user_id)
+      .single();
+
+    const { data: squadMemberships } = await supabase
+      .from('squad_members')
+      .select('squad_id')
+      .eq('user_id', task.user_id);
+
+    if (!squadMemberships) return;
+
+    const activityInserts = squadMemberships.map(sm => ({
+      squad_id: sm.squad_id,
+      user_id: task.user_id,
+      activity_type: 'task_completed' as const,
+      activity_data: {
+        user_name: ownerProfile?.name || task.owner_name,
+        avatar_seed: ownerProfile?.avatar_seed || task.owner_avatar,
+        task_title: task.title,
+        points: task.points,
+        auto_approved: true,
+      }
+    }));
+
+    await supabase.from('squad_activity').insert(activityInserts);
   };
 
   useEffect(() => {
