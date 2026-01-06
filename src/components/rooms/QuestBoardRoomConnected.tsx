@@ -10,7 +10,7 @@ import { PixelSelect } from '../game/PixelSelect';
 import { QuizModal } from '../verification/QuizModal';
 import { ProofUploadModal } from '../verification/ProofUploadModal';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ScrollText, Plus, Lock, Unlock, CheckCircle, Circle, Trash2, AlertTriangle, Upload, BookOpen, Loader2, IndianRupee, Clock } from 'lucide-react';
+import { ScrollText, Plus, Lock, Unlock, CheckCircle, Circle, Trash2, AlertTriangle, Upload, BookOpen, Loader2, IndianRupee, Clock, HourglassIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 const taskTypes = [
@@ -284,11 +284,15 @@ export const QuestBoardRoomConnected = () => {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <PixelPanel className="flex items-center gap-4">
+                <PixelPanel className={`flex items-center gap-4 ${task.status === 'pending_review' ? 'ring-2 ring-game-gold/50' : ''}`}>
                   {/* Status / Complete Button */}
                   <div className="flex-shrink-0">
                     {task.status === 'completed' ? (
                       <CheckCircle className="w-8 h-8 text-primary" />
+                    ) : task.status === 'pending_review' ? (
+                      <div className="relative">
+                        <HourglassIcon className="w-8 h-8 text-game-gold animate-pulse" />
+                      </div>
                     ) : task.status === 'locked' || !isLocked ? (
                       <Circle className="w-8 h-8 text-muted-foreground" />
                     ) : (
@@ -326,6 +330,11 @@ export const QuestBoardRoomConnected = () => {
                     <p className="font-game text-lg text-muted-foreground">
                       {task.subject} {task.chapter && `- ${task.chapter}`}
                     </p>
+                    {task.status === 'pending_review' && (
+                      <p className="font-pixel text-[8px] text-game-gold mt-1 animate-pulse">
+                        ⏳ AWAITING SQUAD REVIEW
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2">

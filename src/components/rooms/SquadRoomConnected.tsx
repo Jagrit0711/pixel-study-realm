@@ -9,8 +9,9 @@ import { PixelInput } from '../game/PixelInput';
 import { PixelAvatar } from '../game/PixelAvatar';
 import { SquadActivityFeed } from './SquadActivityFeed';
 import { ProofReviewPanel } from '../verification/ProofReviewPanel';
+import { SquadTodayTasks } from './SquadTodayTasks';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Plus, LogOut, Copy, Check, Loader2, Crown, IndianRupee, Activity, FileCheck } from 'lucide-react';
+import { Users, Plus, LogOut, Copy, Check, Loader2, Crown, IndianRupee, Activity, FileCheck, ScrollText } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const SquadRoomConnected = () => {
@@ -39,6 +40,7 @@ export const SquadRoomConnected = () => {
   const [joining, setJoining] = useState(false);
   const [showActivityFeed, setShowActivityFeed] = useState(true);
   const [showProofReviews, setShowProofReviews] = useState(false);
+  const [showTodayTasks, setShowTodayTasks] = useState(true);
 
   const currentSquad = squads.find(s => s.id === currentSquadId);
   const currentMembers = currentSquadId ? members[currentSquadId] || [] : [];
@@ -252,6 +254,30 @@ export const SquadRoomConnected = () => {
                   ))}
               </div>
             </PixelPanel>
+          </motion.div>
+        )}
+
+        {/* Today's Squad Quests */}
+        {currentSquad && (
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="mt-6"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <ScrollText className="w-5 h-5 text-accent" />
+                <h3 className="font-pixel text-xs text-foreground">Today's Quests</h3>
+              </div>
+              <PixelButton 
+                size="sm" 
+                variant="secondary"
+                onClick={() => setShowTodayTasks(!showTodayTasks)}
+              >
+                {showTodayTasks ? 'Hide' : 'Show'}
+              </PixelButton>
+            </div>
+            {showTodayTasks && <SquadTodayTasks squadId={currentSquadId} />}
           </motion.div>
         )}
 
