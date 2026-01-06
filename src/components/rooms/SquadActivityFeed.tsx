@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PixelPanel } from '../game/PixelPanel';
 import { PixelAvatar } from '../game/PixelAvatar';
 import { SquadActivity } from '@/hooks/useSquadActivity';
-import { UserPlus, CheckCircle, Flame, ArrowUp, Loader2 } from 'lucide-react';
+import { UserPlus, CheckCircle, Flame, ArrowUp, Loader2, Calendar } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface SquadActivityFeedProps {
@@ -16,6 +16,8 @@ const getActivityIcon = (type: SquadActivity['activity_type']) => {
       return <UserPlus className="w-4 h-4 text-primary" />;
     case 'task_completed':
       return <CheckCircle className="w-4 h-4 text-game-success" />;
+    case 'task_scheduled':
+      return <Calendar className="w-4 h-4 text-game-exp" />;
     case 'streak_milestone':
       return <Flame className="w-4 h-4 text-game-fire" />;
     case 'level_up':
@@ -31,6 +33,16 @@ const getActivityMessage = (activity: SquadActivity) => {
   switch (activity.activity_type) {
     case 'joined':
       return <><span className="text-primary">{name}</span> joined the squad!</>;
+    case 'task_scheduled':
+      return (
+        <>
+          <span className="text-primary">{name}</span> scheduled{' '}
+          <span className="text-game-exp">"{activity.activity_data.task_title}"</span>
+          {activity.activity_data.points && (
+            <span className="text-muted-foreground"> ({activity.activity_data.points} pts)</span>
+          )}
+        </>
+      );
     case 'task_completed':
       return (
         <>

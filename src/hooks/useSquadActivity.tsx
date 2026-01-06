@@ -6,7 +6,7 @@ export interface SquadActivity {
   id: string;
   squad_id: string;
   user_id: string;
-  activity_type: 'joined' | 'task_completed' | 'streak_milestone' | 'level_up';
+  activity_type: 'joined' | 'task_completed' | 'task_scheduled' | 'streak_milestone' | 'level_up';
   activity_data: {
     user_name?: string;
     avatar_seed?: string;
@@ -14,6 +14,7 @@ export interface SquadActivity {
     points?: number;
     streak?: number;
     level?: number;
+    subject?: string;
     [key: string]: unknown;
   };
   created_at: string;
