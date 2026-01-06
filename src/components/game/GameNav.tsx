@@ -21,21 +21,32 @@ export const GameNav = () => {
       className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50"
     >
       <div className="flex items-center gap-2 bg-card/95 backdrop-blur-sm pixel-border p-2">
-        {navItems.map((item) => {
+        {navItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = currentRoom === item.id;
           
           return (
-            <PixelButton
+            <motion.div
               key={item.id}
-              variant={isActive ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => setCurrentRoom(item.id)}
-              className="flex items-center gap-2"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: index * 0.05 }}
             >
-              <Icon className="w-4 h-4" />
-              <span className="hidden sm:inline">{item.label}</span>
-            </PixelButton>
+              <PixelButton
+                variant={isActive ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => setCurrentRoom(item.id)}
+                className={`flex items-center gap-2 relative ${isActive ? 'animate-pulse-glow' : ''}`}
+              >
+                <motion.div
+                  animate={isActive ? { scale: [1, 1.2, 1] } : {}}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Icon className="w-4 h-4" />
+                </motion.div>
+                <span className="hidden sm:inline">{item.label}</span>
+              </PixelButton>
+            </motion.div>
           );
         })}
       </div>

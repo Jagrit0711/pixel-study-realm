@@ -14,13 +14,13 @@ interface DifficultyRequest {
   examDate?: string;
   board?: string;
   classLevel?: string;
-  estimatedMinutes?: number;
 }
 
 interface DifficultyResponse {
   tier: 'Easy' | 'Medium' | 'Hard' | 'Very Hard';
   score: number;
   points: number;
+  estimatedMinutes: number;
   justification: string;
 }
 
@@ -30,9 +30,9 @@ serve(async (req) => {
   }
 
   try {
-    const { subject, chapter, taskType, examName, examDate, board, classLevel, estimatedMinutes } = await req.json() as DifficultyRequest;
+    const { subject, chapter, taskType, examName, examDate, board, classLevel } = await req.json() as DifficultyRequest;
 
-    console.log('Analyzing difficulty for:', { subject, chapter, taskType, examName, examDate, board, classLevel, estimatedMinutes });
+    console.log('Analyzing difficulty for:', { subject, chapter, taskType, examName, examDate, board, classLevel });
 
     // Calculate days until exam
     let daysUntilExam = null;
@@ -42,62 +42,68 @@ serve(async (req) => {
       daysUntilExam = Math.ceil((examDateTime.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     }
 
-    const timeEstimate = estimatedMinutes || 30;
+    const prompt = `You are an expert academic advisor for Indian school/competitive exam students. Your job is to:
+1. ESTIMATE THE TIME required for a study task
+2. Calculate FAIR points based on time and difficulty
 
-    const prompt = `You are an expert academic difficulty analyzer for Indian school/competitive exam students.
-
-Analyze the following study task and provide a FAIR and BALANCED difficulty assessment:
-
+TASK DETAILS:
 Subject: ${subject}
 Chapter/Topic: ${chapter}
 Task Type: ${taskType}
-Estimated Time: ${timeEstimate} minutes
 ${examName ? `Exam: ${examName}` : ''}
 ${board ? `Board/Syllabus: ${board}` : ''}
 ${classLevel ? `Class: ${classLevel}` : ''}
 ${daysUntilExam !== null ? `Days until exam: ${daysUntilExam}` : ''}
 
-CRITICAL SCORING RULES:
-1. TIME IS THE PRIMARY FACTOR (40% weight): More time = more points
-   - 15-30 min tasks: Base 15-25 points
-   - 30-60 min tasks: Base 25-40 points
-   - 60-120 min tasks: Base 40-70 points
-   - 120+ min tasks: Base 70-100+ points
+## TIME ESTIMATION RULES:
+You MUST estimate how long this task realistically takes. Consider:
+- Reading a chapter: 30-60 min per average chapter
+- Problem solving: 3-5 min per problem (more for complex)
+- Revision: 20-40 min per chapter
+- Practice questions: 2-4 min per question
+- Test prep: Depends on scope
 
-2. SUBJECT DIFFICULTY (30% weight):
-   - STEM (Physics, Chemistry, Math): +20-30% bonus
-   - Commerce (Accounts, Economics, Business): Similar to STEM difficulty
-   - Humanities (History, Geography, Political Science): Standard base
-   - Languages (English, Hindi): Slightly lower (-10%)
-   
-3. TOPIC COMPLEXITY (20% weight):
-   - Advanced topics (Integration, Electromagnetism, Organic Chemistry): +15-25%
-   - Basic/Overview topics: Standard
-   - Grammar, simple comprehension: -10-15%
+Examples:
+- "Physics 15 integration problems" → 45-75 min (5 min each)
+- "English entire syllabus revision" → 180-240 min (3-4 hours)
+- "Accounts balance sheet chapter" → 60-90 min
+- "History one chapter reading" → 30-45 min
+- "Math JEE calculus 2 hour practice" → 120 min
 
-4. TASK TYPE (10% weight):
-   - Problem-solving: +15%
-   - Practice questions: +10%
-   - Test-prep: +5%
-   - Revision: Standard
-   - Reading: -5%
+## POINTS CALCULATION:
+Points are based on TIME SPENT (primary) + DIFFICULTY ADJUSTMENT.
 
-EXAMPLES FOR CALIBRATION:
-- "Physics - Integration, 15 problems, 45 min" → 35-45 points (NOT 70!)
-- "English - Complete syllabus revision, 3 hours" → 90-110 points
-- "Math - JEE level Calculus, 2 hours" → 80-100 points
-- "History - One chapter reading, 30 min" → 20-30 points
-- "Accounts - Balance sheets practice, 1 hour" → 45-55 points
+Base formula: points = estimatedMinutes × difficulty_multiplier
 
-DO NOT over-inflate points just because a subject is "hard". Time spent is the PRIMARY factor.
-Commerce and Humanities subjects should get FAIR points based on time and effort, not be dismissed.
+Difficulty multipliers (ALL SUBJECTS TREATED FAIRLY):
+- Easy tasks: 0.8-1.0x
+- Medium tasks: 1.0-1.3x  
+- Hard tasks: 1.3-1.6x
+- Very Hard tasks: 1.6-2.0x
 
-Respond in EXACTLY this JSON format (no markdown, no explanation):
+CRITICAL - FAIR SUBJECT TREATMENT:
+- ALL subjects deserve equal respect for equal effort
+- Physics integration ≈ Accounts complex problems (both are hard)
+- English literature analysis ≈ History source-based questions
+- Economics theory ≈ Chemistry theory
+- NEVER penalize commerce/humanities just because they're "easier"
+- Consider conceptual difficulty, not just computation
+
+Subject examples (at 60 minutes each):
+- Physics electromagnetism (Hard): 60 × 1.4 = ~85 points
+- Accounts partnership accounts (Hard): 60 × 1.4 = ~85 points
+- Math calculus JEE (Very Hard): 60 × 1.7 = ~100 points
+- Economics macro full chapter (Hard): 60 × 1.4 = ~85 points
+- English essay writing (Medium): 60 × 1.2 = ~70 points
+- History entire syllabus 3hr (Hard): 180 × 1.4 = ~250 points
+
+RESPOND IN EXACTLY THIS JSON FORMAT (no markdown):
 {
   "tier": "Easy|Medium|Hard|Very Hard",
-  "score": <number 1-100 representing raw difficulty>,
-  "points": <number based on TIME PRIMARILY, adjusted by difficulty>,
-  "justification": "<2-3 sentences explaining the point allocation with time as key factor>"
+  "score": <1-100 raw difficulty score>,
+  "estimatedMinutes": <realistic time in minutes>,
+  "points": <calculated points using formula above>,
+  "justification": "<brief explanation of time estimate and point calculation>"
 }`;
 
     // Use Lovable AI Gateway
@@ -157,20 +163,24 @@ Respond in EXACTLY this JSON format (no markdown, no explanation):
     if (typeof difficulty.score !== 'number' || difficulty.score < 1 || difficulty.score > 100) {
       throw new Error('Invalid difficulty score from AI');
     }
+    if (typeof difficulty.estimatedMinutes !== 'number' || difficulty.estimatedMinutes < 5) {
+      difficulty.estimatedMinutes = 30; // Default fallback
+    }
     if (typeof difficulty.points !== 'number' || difficulty.points < 1) {
-      throw new Error('Invalid points from AI');
+      // Calculate points if AI didn't provide valid ones
+      const multipliers = { 'Easy': 0.9, 'Medium': 1.15, 'Hard': 1.45, 'Very Hard': 1.8 };
+      difficulty.points = Math.round(difficulty.estimatedMinutes * multipliers[difficulty.tier]);
     }
 
-    // Apply time-based sanity check
-    const minPoints = Math.floor(timeEstimate * 0.5); // At least 0.5 points per minute
-    const maxPoints = Math.ceil(timeEstimate * 2.5); // At most 2.5 points per minute
+    // Sanity checks
+    const minPoints = Math.max(10, Math.floor(difficulty.estimatedMinutes * 0.6));
+    const maxPoints = Math.ceil(difficulty.estimatedMinutes * 2.5);
     
-    if (difficulty.points < minPoints) {
-      difficulty.points = minPoints;
-    }
-    if (difficulty.points > maxPoints) {
-      difficulty.points = maxPoints;
-    }
+    if (difficulty.points < minPoints) difficulty.points = minPoints;
+    if (difficulty.points > maxPoints) difficulty.points = maxPoints;
+
+    // Cap estimated minutes reasonably
+    if (difficulty.estimatedMinutes > 480) difficulty.estimatedMinutes = 480; // Max 8 hours
 
     console.log('Difficulty analysis result:', difficulty);
 

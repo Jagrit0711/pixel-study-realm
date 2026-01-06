@@ -47,7 +47,6 @@ export const QuestBoardRoomConnected = () => {
     chapter: '',
     taskType: 'reading' as Task['task_type'],
     examId: '',
-    estimatedMinutes: 30,
   });
   const [analyzedDifficulty, setAnalyzedDifficulty] = useState<DifficultyResult | null>(null);
 
@@ -86,8 +85,7 @@ export const QuestBoardRoomConnected = () => {
       exam?.name,
       exam?.start_date,
       profile?.board || undefined,
-      profile?.class || undefined,
-      newTask.estimatedMinutes
+      profile?.class || undefined
     );
 
     if (result) {
@@ -115,11 +113,10 @@ export const QuestBoardRoomConnected = () => {
       date: selectedDate,
       exam_id: newTask.examId || undefined,
       difficulty: analyzedDifficulty,
-      estimated_minutes: newTask.estimatedMinutes,
     });
 
     setShowAddModal(false);
-    setNewTask({ title: '', subject: '', chapter: '', taskType: 'reading', examId: '', estimatedMinutes: 30 });
+    setNewTask({ title: '', subject: '', chapter: '', taskType: 'reading', examId: '' });
     setAnalyzedDifficulty(null);
   };
 
@@ -439,28 +436,6 @@ export const QuestBoardRoomConnected = () => {
                     />
                   </div>
 
-                  <div>
-                    <label className="font-pixel text-[8px] text-muted-foreground block mb-2">
-                      ESTIMATED TIME (minutes)
-                    </label>
-                    <PixelSelect
-                      value={String(newTask.estimatedMinutes)}
-                      onChange={(e) => {
-                        setNewTask(p => ({ ...p, estimatedMinutes: parseInt(e.target.value) }));
-                        setAnalyzedDifficulty(null);
-                      }}
-                      options={[
-                        { value: '15', label: '15 min' },
-                        { value: '30', label: '30 min' },
-                        { value: '45', label: '45 min' },
-                        { value: '60', label: '1 hour' },
-                        { value: '90', label: '1.5 hours' },
-                        { value: '120', label: '2 hours' },
-                        { value: '180', label: '3 hours' },
-                        { value: '240', label: '4+ hours' },
-                      ]}
-                    />
-                  </div>
 
                   {exams.length > 0 && (
                     <div>
@@ -506,6 +481,17 @@ export const QuestBoardRoomConnected = () => {
                           <span className={`font-pixel text-sm ${difficultyColors[analyzedDifficulty.tier]}`}>
                             {analyzedDifficulty.tier}
                           </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-pixel text-[10px] text-muted-foreground">EST. TIME</span>
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-4 h-4 text-game-exp" />
+                            <span className="font-game text-xl text-game-exp">
+                              {analyzedDifficulty.estimatedMinutes >= 60 
+                                ? `${Math.floor(analyzedDifficulty.estimatedMinutes / 60)}h ${analyzedDifficulty.estimatedMinutes % 60}m`
+                                : `${analyzedDifficulty.estimatedMinutes}m`}
+                            </span>
+                          </div>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="font-pixel text-[10px] text-muted-foreground">POINTS</span>
