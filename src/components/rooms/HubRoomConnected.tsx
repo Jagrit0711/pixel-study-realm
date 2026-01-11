@@ -3,13 +3,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useTasks } from '@/hooks/useTasks';
 import { useExams } from '@/hooks/useExams';
+import { useStreak } from '@/hooks/useStreak';
 import { useGameStore } from '@/store/gameStore';
 import { PixelPanel } from '../game/PixelPanel';
 import { PixelButton } from '../game/PixelButton';
 import { PixelAvatar } from '../game/PixelAvatar';
 import { WrappedReport } from '../reports/WrappedReport';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Trophy, Target, Clock, Gift, IndianRupee, Loader2 } from 'lucide-react';
+import { Sparkles, Trophy, Target, Clock, Gift, IndianRupee, Loader2, AlertTriangle, Flame } from 'lucide-react';
 
 export const HubRoomConnected = () => {
   const { setCurrentRoom } = useGameStore();
@@ -17,6 +18,7 @@ export const HubRoomConnected = () => {
   const { profile, loading } = useProfile();
   const { tasks } = useTasks();
   const { exams } = useExams();
+  const { streakInfo } = useStreak();
   const [showWrapped, setShowWrapped] = useState(false);
   
   if (loading || !profile) {
@@ -73,6 +75,35 @@ export const HubRoomConnected = () => {
             </p>
           </PixelPanel>
         </motion.div>
+
+        {/* Streak Warning */}
+        {streakInfo.isAtRisk && (
+          <motion.div
+            initial={{ y: 20, opacity: 0, scale: 0.95 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            transition={{ delay: 0.12 }}
+          >
+            <PixelPanel className="flex items-center gap-4 p-4 border-destructive bg-destructive/10">
+              <motion.div
+                animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 1, repeat: Infinity }}
+              >
+                <AlertTriangle className="w-10 h-10 text-destructive" />
+              </motion.div>
+              <div className="flex-1">
+                <h3 className="font-pixel text-sm text-destructive mb-1">⚠️ STREAK AT RISK!</h3>
+                <p className="font-game text-lg text-foreground">
+                  Complete a task in {streakInfo.hoursUntilMidnight}h {streakInfo.minutesUntilMidnight}m to keep your 
+                  <span className="text-accent font-bold"> {streakInfo.currentStreak} day</span> streak!
+                </p>
+              </div>
+              <PixelButton variant="accent" onClick={() => setCurrentRoom('quest-board')}>
+                <Flame className="w-4 h-4 mr-1" />
+                Do Quest
+              </PixelButton>
+            </PixelPanel>
+          </motion.div>
+        )}
 
         {/* Daily Wrapped Button */}
         <motion.div
