@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
@@ -38,6 +38,7 @@ export const useTasks = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [analyzingDifficulty, setAnalyzingDifficulty] = useState(false);
+  const awardedTaskIdsRef = useRef<Set<string>>(new Set());
 
   const fetchTasks = async () => {
     if (!user) return;
@@ -76,7 +77,26 @@ export const useTasks = () => {
           table: 'tasks',
           filter: `user_id=eq.${user.id}`
         },
-        () => {
+        async (payload) => {
+          // If a proof-upload task gets approved by a squad member, we award points here.
+          // Reason: reviewers cannot update someone else's profile due to backend security rules.
+          if (payload.eventType === 'UPDATE') {
+            const oldRow = payload.old as Partial<Task> | null;
+            const newRow = payload.new as Task;
+
+            const wasPendingReview = oldRow?.status === 'pending_review';
+            const isNowCompleted = newRow?.status === 'completed';
+            const isUploadProof = newRow?.proof_type === 'upload';
+
+            if (wasPendingReview && isNowCompleted && isUploadProof) {
+              if (!awardedTaskIdsRef.current.has(newRow.id)) {
+                awardedTaskIdsRef.current.add(newRow.id);
+                await awardTaskPoints(newRow);
+                toast.success(`Proof approved! +${newRow.points} points`);
+              }
+            }
+          }
+
           fetchTasks();
         }
       )
@@ -272,21 +292,22 @@ export const useTasks = () => {
 
     if (profile) {
       const newPoints = profile.total_points + task.points;
-      const newExp = profile.exp + task.points;
-      const expForNextLevel = profile.level * 100;
+      let newExp = profile.exp + task.points;
       let newLevel = profile.level;
-      let remainingExp = newExp;
 
-      while (remainingExp >= expForNextLevel) {
-        remainingExp -= expForNextLevel;
+      // Recalculate the threshold each time the user levels up
+      let expForNextLevel = newLevel * 100;
+      while (newExp >= expForNextLevel) {
+        newExp -= expForNextLevel;
         newLevel++;
+        expForNextLevel = newLevel * 100;
       }
 
       await supabase
         .from('profiles')
         .update({
           total_points: newPoints,
-          exp: remainingExp,
+          exp: newExp,
           level: newLevel
         })
         .eq('user_id', user.id);

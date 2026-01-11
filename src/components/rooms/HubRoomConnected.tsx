@@ -172,7 +172,7 @@ export const HubRoomConnected = () => {
                 <h3 className="font-pixel text-[10px] text-foreground mb-1">YOUR BALANCE</h3>
                 <div className="flex items-center justify-center gap-1">
                   <IndianRupee className="w-5 h-5 text-game-gold" />
-                  <p className="font-game text-3xl text-game-gold">{profile.total_points}</p>
+                  <p className="font-game text-3xl text-game-gold">{pointsEarned}</p>
                 </div>
               </div>
               <PixelButton size="sm" variant="gold" onClick={() => setCurrentRoom('squad')}>
@@ -200,7 +200,7 @@ export const HubRoomConnected = () => {
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1">
                       <IndianRupee className="w-4 h-4 text-primary" />
-                      <p className="font-game text-3xl text-primary">{profile.total_points}</p>
+                      <p className="font-game text-3xl text-primary">{pointsEarned}</p>
                     </div>
                     <p className="font-pixel text-[8px] text-muted-foreground">POINTS</p>
                   </div>

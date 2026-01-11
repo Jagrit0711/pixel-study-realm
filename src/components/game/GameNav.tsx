@@ -18,7 +18,7 @@ export const GameNav = () => {
     <motion.nav
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50"
+      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 hidden md:block"
     >
       <div className="flex items-center gap-2 bg-card/95 backdrop-blur-sm pixel-border p-2">
         {navItems.map((item, index) => {
