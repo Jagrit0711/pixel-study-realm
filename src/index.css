@@ -231,4 +231,8 @@
     transform: translateY(-4px);
     box-shadow: var(--shadow-pixel-lg);
   }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }

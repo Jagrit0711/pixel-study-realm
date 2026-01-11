@@ -1,6 +1,6 @@
 import { useProfile } from '@/hooks/useProfile';
 import { useExams } from '@/hooks/useExams';
-import { PixelPanel } from './PixelPanel';
+import { useTasks } from '@/hooks/useTasks';
 import { PixelAvatar } from './PixelAvatar';
 import { PixelBar } from './PixelBar';
 import { motion } from 'framer-motion';
@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react';
 export const GameHUD = () => {
   const { profile } = useProfile();
   const { exams } = useExams();
+  const { tasks } = useTasks();
   const [now, setNow] = useState(new Date());
   
   // Update time every minute for countdown
@@ -21,6 +22,12 @@ export const GameHUD = () => {
   if (!profile) return null;
 
   const expForNextLevel = profile.level * 100;
+
+  // Use the Quest tab logic as the source of truth for points display
+  const computedPoints = tasks
+    .filter(t => t.status === 'completed')
+    .reduce((sum, t) => sum + t.points, 0);
+  const pointsToShow = tasks.length ? computedPoints : profile.total_points;
 
   // Find next upcoming exam
   const upcomingExams = exams
@@ -90,7 +97,7 @@ export const GameHUD = () => {
           
           <div className="flex items-center gap-2">
             <Star className="w-5 h-5 text-game-gold" />
-            <span className="font-game text-xl">{profile.total_points}</span>
+            <span className="font-game text-xl">{pointsToShow}</span>
             <span className="font-pixel text-[8px] text-muted-foreground">POINTS</span>
           </div>
           

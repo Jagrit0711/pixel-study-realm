@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { GameHUD } from '@/components/game/GameHUD';
 import { GameNav } from '@/components/game/GameNav';
+import { MobileNav } from '@/components/game/MobileNav';
 import { GameBackground } from '@/components/game/GameBackground';
 import { HubRoomConnected } from '@/components/rooms/HubRoomConnected';
 import { SquadRoomConnected } from '@/components/rooms/SquadRoomConnected';
@@ -9,9 +11,16 @@ import { ExamRoomConnected } from '@/components/rooms/ExamRoomConnected';
 import { ProfileRoomConnected } from '@/components/rooms/ProfileRoomConnected';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
+import { OnboardingModal } from '@/components/onboarding/OnboardingModal';
 
 const Index = () => {
   const { currentRoom } = useGameStore();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    const seen = localStorage.getItem('gq_onboarded') === '1';
+    if (!seen) setShowOnboarding(true);
+  }, []);
 
   const renderRoom = () => {
     switch (currentRoom) {
@@ -34,13 +43,17 @@ const Index = () => {
     <>
       <Helmet>
         <title>GrindQuest - Gamified Study Accountability</title>
-        <meta name="description" content="Level up your study game with GrindQuest. A pixel-art study accountability system with squads, quests, and AI-verified progress tracking." />
+        <meta
+          name="description"
+          content="Level up your study game with GrindQuest. A pixel-art study accountability system with squads, quests, and AI-verified progress tracking."
+        />
+        <link rel="canonical" href="/game" />
       </Helmet>
-      
+
       <div className="min-h-screen overflow-hidden">
         <GameBackground />
         <GameHUD />
-        
+
         <AnimatePresence mode="wait">
           <motion.main
             key={currentRoom}
@@ -52,8 +65,23 @@ const Index = () => {
             {renderRoom()}
           </motion.main>
         </AnimatePresence>
-        
+
+        {/* Desktop nav (tablet/desktop) */}
         <GameNav />
+
+        {/* Mobile rover nav */}
+        <MobileNav />
+
+        <AnimatePresence>
+          {showOnboarding && (
+            <OnboardingModal
+              onComplete={() => {
+                localStorage.setItem('gq_onboarded', '1');
+                setShowOnboarding(false);
+              }}
+            />
+          )}
+        </AnimatePresence>
       </div>
     </>
   );
