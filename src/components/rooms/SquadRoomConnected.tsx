@@ -45,6 +45,13 @@ export const SquadRoomConnected = () => {
   const currentSquad = squads.find(s => s.id === currentSquadId);
   const currentMembers = currentSquadId ? members[currentSquadId] || [] : [];
 
+  // Auto-select squad if user has only one
+  useEffect(() => {
+    if (squads.length === 1 && !currentSquadId) {
+      setCurrentSquadId(squads[0].id);
+    }
+  }, [squads, currentSquadId, setCurrentSquadId]);
+
   useEffect(() => {
     if (currentSquadId && !members[currentSquadId]) {
       fetchSquadMembers(currentSquadId);
@@ -89,11 +96,6 @@ export const SquadRoomConnected = () => {
     await leaveSquad(squadId);
   };
 
-  const handleSelectSquad = (squadId: string) => {
-    setCurrentSquadId(squadId);
-    fetchSquadMembers(squadId);
-  };
-
   if (loading) {
     return (
       <motion.div className="min-h-screen pt-24 pb-24 px-4 flex items-center justify-center">
@@ -102,33 +104,16 @@ export const SquadRoomConnected = () => {
     );
   }
 
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="min-h-screen pt-24 pb-24 px-4"
-    >
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Users className="w-8 h-8 text-primary" />
-            <h1 className="font-pixel text-lg text-foreground">Your Squads</h1>
-          </div>
-          <div className="flex gap-2">
-            <PixelButton size="sm" onClick={() => setShowJoinModal(true)}>
-              Join Squad
-            </PixelButton>
-            <PixelButton size="sm" variant="accent" onClick={() => setShowCreateModal(true)}>
-              <Plus className="w-4 h-4 mr-1" />
-              Create
-            </PixelButton>
-          </div>
-        </div>
-
-        {/* Squads List */}
-        {squads.length === 0 ? (
+  // If user has no squads, show create/join options
+  if (squads.length === 0) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="min-h-screen pt-24 pb-24 px-4"
+      >
+        <div className="max-w-4xl mx-auto">
           <PixelPanel className="text-center py-12">
             <Users className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
             <h2 className="font-pixel text-sm text-foreground mb-2">No Squads Yet</h2>
@@ -140,86 +125,188 @@ export const SquadRoomConnected = () => {
               <PixelButton variant="secondary" onClick={() => setShowJoinModal(true)}>Join Squad</PixelButton>
             </div>
           </PixelPanel>
-        ) : (
-          <div className="space-y-4">
-            {squads.map((squad) => (
+        </div>
+
+        {/* Create Modal */}
+        <AnimatePresence>
+          {showCreateModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setShowCreateModal(false)}
+            >
               <motion.div
-                key={squad.id}
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
               >
-                <PixelPanel
-                  className={`cursor-pointer transition-all ${
-                    currentSquadId === squad.id ? 'ring-2 ring-primary' : 'hover:brightness-105'
-                  }`}
-                  onClick={() => handleSelectSquad(squad.id)}
-                >
-                  <div className="flex items-center justify-between mb-4">
+                <PixelPanel variant="dialog" className="w-full max-w-md">
+                  <h2 className="font-pixel text-sm text-foreground mb-4">Create Squad</h2>
+                  <div className="space-y-4">
                     <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-pixel text-sm text-foreground">{squad.name}</h3>
-                        {squad.created_by === user?.id && (
-                          <Crown className="w-4 h-4 text-game-gold" />
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="font-game text-lg text-muted-foreground">
-                          Code: {squad.code}
-                        </span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCopyCode(squad.code);
-                          }}
-                          className="p-1 hover:bg-muted rounded"
-                        >
-                          {copiedCode === squad.code ? (
-                            <Check className="w-4 h-4 text-primary" />
-                          ) : (
-                            <Copy className="w-4 h-4 text-muted-foreground" />
-                          )}
-                        </button>
-                      </div>
+                      <label className="font-pixel text-[8px] text-muted-foreground block mb-2">
+                        SQUAD NAME
+                      </label>
+                      <PixelInput
+                        value={newSquadName}
+                        onChange={(e) => setNewSquadName(e.target.value)}
+                        placeholder="Enter squad name..."
+                      />
                     </div>
-                    <PixelButton
-                      size="sm"
-                      variant="danger"
-                      onClick={() => handleLeaveSquad(squad.id)}
-                    >
-                      <LogOut className="w-4 h-4" />
-                    </PixelButton>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <span className="font-pixel text-[8px] text-muted-foreground">MEMBERS:</span>
-                    <div className="flex -space-x-2">
-                      {(members[squad.id] || []).slice(0, 5).map((member) => (
-                        <PixelAvatar key={member.id} seed={member.profile?.avatar_seed || 'default'} size="sm" />
-                      ))}
+                    <div className="flex gap-2">
+                      <PixelButton onClick={handleCreateSquad} className="flex-1" disabled={creating}>
+                        {creating ? 'Creating...' : 'Create'}
+                      </PixelButton>
+                      <PixelButton
+                        variant="secondary"
+                        onClick={() => setShowCreateModal(false)}
+                      >
+                        Cancel
+                      </PixelButton>
                     </div>
-                    <span className="font-game text-lg text-muted-foreground">
-                      {(members[squad.id] || []).length}/12
-                    </span>
                   </div>
                 </PixelPanel>
               </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Join Modal */}
+        <AnimatePresence>
+          {showJoinModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setShowJoinModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <PixelPanel variant="dialog" className="w-full max-w-md">
+                  <h2 className="font-pixel text-sm text-foreground mb-4">Join Squad</h2>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="font-pixel text-[8px] text-muted-foreground block mb-2">
+                        SQUAD CODE
+                      </label>
+                      <PixelInput
+                        value={joinCode}
+                        onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                        placeholder="Enter 6-digit code..."
+                        maxLength={6}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <PixelButton onClick={handleJoinSquad} className="flex-1" disabled={joining}>
+                        {joining ? 'Joining...' : 'Join'}
+                      </PixelButton>
+                      <PixelButton
+                        variant="secondary"
+                        onClick={() => setShowJoinModal(false)}
+                      >
+                        Cancel
+                      </PixelButton>
+                    </div>
+                  </div>
+                </PixelPanel>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    );
+  }
+
+  // User has squad(s) - show the squad view directly
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="min-h-screen pt-24 pb-24 px-4"
+    >
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            <Users className="w-8 h-8 text-primary" />
+            <h1 className="font-pixel text-lg text-foreground">
+              {currentSquad?.name || 'Your Squad'}
+            </h1>
+            {currentSquad?.created_by === user?.id && (
+              <Crown className="w-5 h-5 text-game-gold" />
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {currentSquad && (
+              <>
+                <div className="flex items-center gap-2 px-3 py-1 bg-card pixel-border">
+                  <span className="font-game text-lg text-muted-foreground">
+                    Code: {currentSquad.code}
+                  </span>
+                  <button
+                    onClick={() => handleCopyCode(currentSquad.code)}
+                    className="p-1 hover:bg-muted rounded"
+                  >
+                    {copiedCode === currentSquad.code ? (
+                      <Check className="w-4 h-4 text-primary" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-muted-foreground" />
+                    )}
+                  </button>
+                </div>
+                <PixelButton
+                  size="sm"
+                  variant="danger"
+                  onClick={() => handleLeaveSquad(currentSquad.id)}
+                >
+                  <LogOut className="w-4 h-4" />
+                </PixelButton>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Squad Switcher (only if multiple squads) */}
+        {squads.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {squads.map((squad) => (
+              <PixelButton
+                key={squad.id}
+                variant={currentSquadId === squad.id ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => setCurrentSquadId(squad.id)}
+              >
+                {squad.name}
+              </PixelButton>
             ))}
+            <PixelButton size="sm" variant="accent" onClick={() => setShowJoinModal(true)}>
+              <Plus className="w-4 h-4" />
+            </PixelButton>
           </div>
         )}
 
-        {/* Current Squad Leaderboard */}
+        {/* Leaderboard */}
         {currentSquad && currentMembers.length > 0 && (
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
           >
-            <PixelPanel variant="wood" className="mt-8">
+            <PixelPanel variant="wood">
               <h2 className="font-pixel text-sm text-primary-foreground mb-4">
-                {currentSquad.name} - Leaderboard
+                Leaderboard
               </h2>
               <div className="space-y-3">
                 {[...currentMembers]
-                  .sort((a, b) => (b.profile?.total_points || 0) - (a.profile?.total_points || 0))
+                  .sort((a, b) => (b.computed_points || 0) - (a.computed_points || 0))
                   .map((member, index) => (
                     <div
                       key={member.id}
@@ -243,7 +330,7 @@ export const SquadRoomConnected = () => {
                         <div className="flex items-center gap-1">
                           <IndianRupee className="w-4 h-4 text-game-gold" />
                           <p className="font-game text-xl text-game-gold">
-                            {member.profile?.total_points || 0}
+                            {member.computed_points || 0}
                           </p>
                         </div>
                         <p className="font-pixel text-[8px] text-primary-foreground/60">
@@ -262,7 +349,6 @@ export const SquadRoomConnected = () => {
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="mt-6"
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -282,35 +368,31 @@ export const SquadRoomConnected = () => {
         )}
 
         {/* Proof Reviews Section */}
-        {squads.length > 0 && (
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="mt-6"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <FileCheck className="w-5 h-5 text-game-energy" />
-                <h3 className="font-pixel text-xs text-foreground">Proof Reviews</h3>
-              </div>
-              <PixelButton 
-                size="sm" 
-                variant="secondary"
-                onClick={() => setShowProofReviews(!showProofReviews)}
-              >
-                {showProofReviews ? 'Hide' : 'Show'}
-              </PixelButton>
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <FileCheck className="w-5 h-5 text-game-energy" />
+              <h3 className="font-pixel text-xs text-foreground">Proof Reviews</h3>
             </div>
-            {showProofReviews && <ProofReviewPanel />}
-          </motion.div>
-        )}
+            <PixelButton 
+              size="sm" 
+              variant="secondary"
+              onClick={() => setShowProofReviews(!showProofReviews)}
+            >
+              {showProofReviews ? 'Hide' : 'Show'}
+            </PixelButton>
+          </div>
+          {showProofReviews && <ProofReviewPanel />}
+        </motion.div>
 
         {/* Activity Feed */}
         {currentSquad && (
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="mt-6"
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -332,54 +414,7 @@ export const SquadRoomConnected = () => {
         )}
       </div>
 
-      {/* Create Modal */}
-      <AnimatePresence>
-        {showCreateModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setShowCreateModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <PixelPanel variant="dialog" className="w-full max-w-md">
-                <h2 className="font-pixel text-sm text-foreground mb-4">Create Squad</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="font-pixel text-[8px] text-muted-foreground block mb-2">
-                      SQUAD NAME
-                    </label>
-                    <PixelInput
-                      value={newSquadName}
-                      onChange={(e) => setNewSquadName(e.target.value)}
-                      placeholder="Enter squad name..."
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <PixelButton onClick={handleCreateSquad} className="flex-1" disabled={creating}>
-                      {creating ? 'Creating...' : 'Create'}
-                    </PixelButton>
-                    <PixelButton
-                      variant="secondary"
-                      onClick={() => setShowCreateModal(false)}
-                    >
-                      Cancel
-                    </PixelButton>
-                  </div>
-                </div>
-              </PixelPanel>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Join Modal */}
+      {/* Join Modal (for adding more squads) */}
       <AnimatePresence>
         {showJoinModal && (
           <motion.div
@@ -396,7 +431,7 @@ export const SquadRoomConnected = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <PixelPanel variant="dialog" className="w-full max-w-md">
-                <h2 className="font-pixel text-sm text-foreground mb-4">Join Squad</h2>
+                <h2 className="font-pixel text-sm text-foreground mb-4">Join Another Squad</h2>
                 <div className="space-y-4">
                   <div>
                     <label className="font-pixel text-[8px] text-muted-foreground block mb-2">

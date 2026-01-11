@@ -22,6 +22,8 @@ export interface SquadMember {
     total_points: number;
     current_streak: number;
   };
+  // Computed from tasks - source of truth for points
+  computed_points?: number;
 }
 
 export const useSquads = () => {
@@ -73,7 +75,13 @@ export const useSquads = () => {
     if (squadError) {
       console.error('Error fetching squads:', squadError);
     } else {
-      setSquads(squadData || []);
+      const fetchedSquads = squadData || [];
+      setSquads(fetchedSquads);
+      
+      // Auto-select if user has exactly 1 squad
+      if (fetchedSquads.length === 1 && !currentSquadId) {
+        setCurrentSquadId(fetchedSquads[0].id);
+      }
     }
     setLoading(false);
   };
@@ -90,14 +98,30 @@ export const useSquads = () => {
     }
 
     const userIds = membersData.map(m => m.user_id);
+    
+    // Fetch profiles
     const { data: profilesData } = await supabase
       .from('profiles')
       .select('user_id, name, avatar_seed, total_points, current_streak')
       .in('user_id', userIds);
 
+    // Fetch completed tasks for each member to compute accurate points
+    const { data: tasksData } = await supabase
+      .from('tasks')
+      .select('user_id, points, status')
+      .in('user_id', userIds)
+      .eq('status', 'completed');
+
+    // Compute points per user from tasks
+    const pointsByUser: Record<string, number> = {};
+    (tasksData || []).forEach(task => {
+      pointsByUser[task.user_id] = (pointsByUser[task.user_id] || 0) + task.points;
+    });
+
     const membersWithProfiles: SquadMember[] = membersData.map(member => ({
       ...member,
-      profile: profilesData?.find(p => p.user_id === member.user_id)
+      profile: profilesData?.find(p => p.user_id === member.user_id),
+      computed_points: pointsByUser[member.user_id] || 0
     }));
 
     setMembers(prev => ({ ...prev, [squadId]: membersWithProfiles }));
@@ -144,7 +168,7 @@ export const useSquads = () => {
     };
   }, [user]);
 
-  // Subscribe to profile changes for current squad - refetch members when profiles update
+  // Subscribe to profile and task changes for current squad
   useEffect(() => {
     if (!user || !currentSquadId) return;
 
@@ -152,12 +176,19 @@ export const useSquads = () => {
     fetchSquadMembers(currentSquadId);
 
     const channel = supabase
-      .channel(`squad-profiles-${currentSquadId}`)
+      .channel(`squad-data-${currentSquadId}`)
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'profiles' },
+        { event: '*', schema: 'public', table: 'profiles' },
         () => {
-          // Refetch squad members when any profile is updated
+          fetchSquadMembers(currentSquadId);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'tasks' },
+        () => {
+          // Refetch when tasks change (completion, etc.)
           fetchSquadMembers(currentSquadId);
         }
       )
@@ -204,6 +235,7 @@ export const useSquads = () => {
 
     toast.success(`Squad "${name}" created!`);
     await fetchSquads();
+    setCurrentSquadId(squad.id);
     return squad;
   };
 
@@ -262,6 +294,7 @@ export const useSquads = () => {
 
     toast.success(`Joined "${squad.name}"!`);
     await fetchSquads();
+    setCurrentSquadId(squad.id);
     return true;
   };
 
