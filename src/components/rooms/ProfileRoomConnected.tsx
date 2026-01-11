@@ -37,14 +37,17 @@ export const ProfileRoomConnected = () => {
     );
   }
 
-  const completedTasks = tasks.filter(t => t.status === 'completed').length;
+  const completedTasksCount = tasks.filter(t => t.status === 'completed').length;
   const missedTasks = tasks.filter(t => t.status === 'missed').length;
-  const totalPoints = profile.total_points;
-  const expForNextLevel = profile.level * 100;
-
-  // Calculate money owed/to receive
-  const earnedPoints = tasks.filter(t => t.status === 'completed').reduce((sum, t) => sum + t.points, 0);
+  
+  // Use computed points from tasks (same as Quest tab)
+  const computedPoints = tasks.filter(t => t.status === 'completed').reduce((sum, t) => sum + t.points, 0);
   const lostPoints = tasks.filter(t => t.status === 'missed').reduce((sum, t) => sum + t.points, 0);
+  
+  // Calculate exp and level based on computed points
+  const expForNextLevel = profile.level * 100;
+  const computedExp = computedPoints % 100;
+  const computedLevel = Math.floor(computedPoints / 100) + 1;
 
   const handleSaveName = async () => {
     if (!tempName.trim()) {
@@ -72,10 +75,10 @@ export const ProfileRoomConnected = () => {
   const unlockedAchievementIds = new Set(userAchievements.map(ua => ua.achievement_id));
 
   const stats = [
-    { icon: Star, label: 'Total Points', value: totalPoints, color: 'text-game-gold' },
-    { icon: Target, label: 'Quests Done', value: completedTasks, color: 'text-primary' },
+    { icon: Star, label: 'Total Points', value: computedPoints, color: 'text-game-gold' },
+    { icon: Target, label: 'Quests Done', value: completedTasksCount, color: 'text-primary' },
     { icon: Flame, label: 'Current Streak', value: profile.current_streak, color: 'text-accent' },
-    { icon: Trophy, label: 'Best Streak', value: profile.longest_streak, color: 'text-game-energy' },
+    { icon: Trophy, label: 'Best Streak', value: profile.longest_streak, color: 'text-game-gold' },
     { icon: Award, label: 'Exams Tracked', value: exams.length, color: 'text-game-exp' },
     { icon: User, label: 'Squads Joined', value: squads.length, color: 'text-primary' },
   ];
@@ -151,7 +154,7 @@ export const ProfileRoomConnected = () => {
                 </div>
 
                 <p className="font-game text-2xl text-primary-foreground/80 mb-4">
-                  Level {profile.level} Scholar
+                  Level {computedLevel} Scholar
                 </p>
 
                 {/* Experience Bar */}
@@ -159,12 +162,12 @@ export const ProfileRoomConnected = () => {
                   <div className="flex justify-between mb-1">
                     <span className="font-pixel text-[8px] text-primary-foreground/60">EXP</span>
                     <span className="font-game text-sm text-primary-foreground/80">
-                      {profile.exp} / {expForNextLevel}
+                      {computedExp} / {100}
                     </span>
                   </div>
                   <PixelBar
-                    value={profile.exp}
-                    max={expForNextLevel}
+                    value={computedExp}
+                    max={100}
                     variant="exp"
                     showText={false}
                   />
@@ -261,7 +264,7 @@ export const ProfileRoomConnected = () => {
               <div className="bg-game-energy/10 p-4 pixel-border text-center">
                 <div className="flex items-center justify-center gap-1 mb-2">
                   <IndianRupee className="w-5 h-5 text-game-energy" />
-                  <span className="font-pixel text-2xl text-game-energy">{earnedPoints}</span>
+                  <span className="font-pixel text-2xl text-game-energy">{computedPoints}</span>
                 </div>
                 <p className="font-pixel text-[8px] text-muted-foreground">EARNED</p>
                 <p className="font-game text-sm text-muted-foreground mt-1">
@@ -280,8 +283,8 @@ export const ProfileRoomConnected = () => {
               </div>
             </div>
             <p className="font-game text-sm text-muted-foreground text-center mt-4">
-              Net: <span className={earnedPoints >= lostPoints ? 'text-game-energy' : 'text-destructive'}>
-                ₹{earnedPoints - lostPoints}
+              Net: <span className={computedPoints >= lostPoints ? 'text-game-energy' : 'text-destructive'}>
+                ₹{computedPoints - lostPoints}
               </span>
             </p>
           </PixelPanel>
