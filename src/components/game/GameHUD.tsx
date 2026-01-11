@@ -1,6 +1,7 @@
 import { useProfile } from '@/hooks/useProfile';
 import { useExams } from '@/hooks/useExams';
 import { useTasks } from '@/hooks/useTasks';
+import { PixelPanel } from './PixelPanel';
 import { PixelAvatar } from './PixelAvatar';
 import { PixelBar } from './PixelBar';
 import { motion } from 'framer-motion';
