@@ -115,6 +115,48 @@ export const useProofReviews = () => {
     setLoading(false);
   };
 
+  const awardPoints = async (userId: string, points: number) => {
+    // Get current profile
+    const { data: profile, error: fetchError } = await supabase
+      .from('profiles')
+      .select('total_points, exp, level')
+      .eq('user_id', userId)
+      .single();
+
+    if (fetchError || !profile) {
+      console.error('Failed to fetch profile for points award:', fetchError);
+      return false;
+    }
+
+    let newPoints = profile.total_points + points;
+    let newExp = profile.exp + points;
+    let newLevel = profile.level;
+
+    // Level up calculation - recalculate threshold for each level
+    let expForNextLevel = newLevel * 100;
+    while (newExp >= expForNextLevel) {
+      newExp -= expForNextLevel;
+      newLevel++;
+      expForNextLevel = newLevel * 100; // Recalculate for new level
+    }
+
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        total_points: newPoints,
+        exp: newExp,
+        level: newLevel
+      })
+      .eq('user_id', userId);
+
+    if (updateError) {
+      console.error('Failed to update profile points:', updateError);
+      return false;
+    }
+
+    return true;
+  };
+
   const autoApproveTask = async (task: PendingProofTask) => {
     // Update task status to completed
     const { error: taskError } = await supabase
@@ -128,33 +170,7 @@ export const useProofReviews = () => {
     }
 
     // Award points to task owner
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('total_points, exp, level')
-      .eq('user_id', task.user_id)
-      .single();
-
-    if (profile) {
-      const newPoints = profile.total_points + task.points;
-      const newExp = profile.exp + task.points;
-      const expForNextLevel = profile.level * 100;
-      let newLevel = profile.level;
-      let remainingExp = newExp;
-
-      while (remainingExp >= expForNextLevel) {
-        remainingExp -= expForNextLevel;
-        newLevel++;
-      }
-
-      await supabase
-        .from('profiles')
-        .update({
-          total_points: newPoints,
-          exp: remainingExp,
-          level: newLevel
-        })
-        .eq('user_id', task.user_id);
-    }
+    await awardPoints(task.user_id, task.points);
 
     // Log activity as auto-approved
     await logAutoApproveActivity(task);
@@ -212,32 +228,9 @@ export const useProofReviews = () => {
     const task = pendingTasks.find(t => t.id === taskId);
     if (task) {
       // Award points to task owner
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('total_points, exp, level')
-        .eq('user_id', task.user_id)
-        .single();
-
-      if (profile) {
-        const newPoints = profile.total_points + task.points;
-        const newExp = profile.exp + task.points;
-        const expForNextLevel = profile.level * 100;
-        let newLevel = profile.level;
-        let remainingExp = newExp;
-
-        while (remainingExp >= expForNextLevel) {
-          remainingExp -= expForNextLevel;
-          newLevel++;
-        }
-
-        await supabase
-          .from('profiles')
-          .update({
-            total_points: newPoints,
-            exp: remainingExp,
-            level: newLevel
-          })
-          .eq('user_id', task.user_id);
+      const success = await awardPoints(task.user_id, task.points);
+      if (!success) {
+        toast.error('Failed to award points');
       }
 
       // Log activity
