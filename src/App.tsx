@@ -8,6 +8,10 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
+import { LandingPage } from "./pages/LandingPage";
+import { PrivacyPage } from "./pages/PrivacyPage";
+import { TermsPage } from "./pages/TermsPage";
+import { InstallPage } from "./pages/InstallPage";
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
@@ -42,7 +46,7 @@ const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/game" replace />;
   }
 
   return <>{children}</>;
@@ -50,12 +54,16 @@ const AuthRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AppRoutes = () => (
   <Routes>
+    <Route path="/" element={<LandingPage />} />
+    <Route path="/privacy" element={<PrivacyPage />} />
+    <Route path="/terms" element={<TermsPage />} />
+    <Route path="/install" element={<InstallPage />} />
     <Route path="/auth" element={
       <AuthRoute>
         <AuthPage />
       </AuthRoute>
     } />
-    <Route path="/" element={
+    <Route path="/game" element={
       <ProtectedRoute>
         <Index />
       </ProtectedRoute>
