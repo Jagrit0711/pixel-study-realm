@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { forwardRef, ReactNode } from 'react';
+import { feedback } from '@/hooks/useSettings';
 
 interface PixelButtonProps {
   variant?: 'primary' | 'secondary' | 'accent' | 'danger' | 'gold';
@@ -10,10 +11,11 @@ interface PixelButtonProps {
   disabled?: boolean;
   onClick?: () => void;
   type?: 'button' | 'submit' | 'reset';
+  feedbackType?: 'click' | 'success' | 'error' | 'levelUp' | 'none';
 }
 
 const PixelButton = forwardRef<HTMLButtonElement, PixelButtonProps>(
-  ({ className, variant = 'primary', size = 'md', children, disabled, onClick, type = 'button' }, ref) => {
+  ({ className, variant = 'primary', size = 'md', children, disabled, onClick, type = 'button', feedbackType = 'click' }, ref) => {
     const variants = {
       primary: 'bg-primary text-primary-foreground hover:brightness-110',
       secondary: 'bg-secondary text-secondary-foreground hover:brightness-105',
@@ -26,6 +28,14 @@ const PixelButton = forwardRef<HTMLButtonElement, PixelButtonProps>(
       sm: 'px-3 py-1.5 text-lg',
       md: 'px-5 py-2.5 text-xl',
       lg: 'px-7 py-3.5 text-2xl',
+    };
+
+    const handleClick = () => {
+      if (disabled) return;
+      if (feedbackType !== 'none') {
+        feedback(feedbackType);
+      }
+      onClick?.();
     };
 
     return (
@@ -43,7 +53,7 @@ const PixelButton = forwardRef<HTMLButtonElement, PixelButtonProps>(
           className
         )}
         disabled={disabled}
-        onClick={onClick}
+        onClick={handleClick}
       >
         {children}
       </motion.button>

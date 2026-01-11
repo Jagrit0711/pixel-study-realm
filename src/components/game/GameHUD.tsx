@@ -4,8 +4,10 @@ import { useTasks } from '@/hooks/useTasks';
 import { PixelPanel } from './PixelPanel';
 import { PixelAvatar } from './PixelAvatar';
 import { PixelBar } from './PixelBar';
+import { PixelButton } from './PixelButton';
+import { SettingsModal } from './SettingsModal';
 import { motion } from 'framer-motion';
-import { Flame, Star, Trophy, Clock } from 'lucide-react';
+import { Flame, Star, Trophy, Clock, Settings } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export const GameHUD = () => {
@@ -13,6 +15,7 @@ export const GameHUD = () => {
   const { exams } = useExams();
   const { tasks } = useTasks();
   const [now, setNow] = useState(new Date());
+  const [showSettings, setShowSettings] = useState(false);
   
   // Update time every minute for countdown
   useEffect(() => {
@@ -22,13 +25,14 @@ export const GameHUD = () => {
 
   if (!profile) return null;
 
-  const expForNextLevel = profile.level * 100;
-
-  // Use the Quest tab logic as the source of truth for points display
+  // Use computed points from tasks (same as Quest tab)
   const computedPoints = tasks
     .filter(t => t.status === 'completed')
     .reduce((sum, t) => sum + t.points, 0);
-  const pointsToShow = tasks.length ? computedPoints : profile.total_points;
+  
+  // Calculate exp and level based on computed points
+  const computedExp = computedPoints % 100;
+  const computedLevel = Math.floor(computedPoints / 100) + 1;
 
   // Find next upcoming exam
   const upcomingExams = exams
@@ -60,12 +64,12 @@ export const GameHUD = () => {
           <PixelAvatar seed={profile.avatar_seed} size="md" />
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="font-pixel text-[10px] text-primary">Lv.{profile.level}</span>
+              <span className="font-pixel text-[10px] text-primary">Lv.{computedLevel}</span>
               <span className="font-game text-xl">{profile.name}</span>
             </div>
             <PixelBar
-              value={profile.exp}
-              max={expForNextLevel}
+              value={computedExp}
+              max={100}
               variant="exp"
               showText={false}
               className="w-32"
@@ -98,7 +102,7 @@ export const GameHUD = () => {
           
           <div className="flex items-center gap-2">
             <Star className="w-5 h-5 text-game-gold" />
-            <span className="font-game text-xl">{pointsToShow}</span>
+            <span className="font-game text-xl">{computedPoints}</span>
             <span className="font-pixel text-[8px] text-muted-foreground">POINTS</span>
           </div>
           
@@ -107,8 +111,16 @@ export const GameHUD = () => {
             <span className="font-game text-xl">{profile.longest_streak}</span>
             <span className="font-pixel text-[8px] text-muted-foreground">BEST</span>
           </div>
+
+          {/* Settings Button */}
+          <PixelButton size="sm" variant="secondary" onClick={() => setShowSettings(true)}>
+            <Settings className="w-4 h-4" />
+          </PixelButton>
         </PixelPanel>
       </div>
+
+      {/* Settings Modal */}
+      <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
     </motion.div>
   );
 };
