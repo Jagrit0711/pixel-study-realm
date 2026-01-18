@@ -9,6 +9,7 @@ import { SettingsModal } from './SettingsModal';
 import { motion } from 'framer-motion';
 import { Flame, Star, Trophy, Clock, Settings } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const GameHUD = () => {
   const { profile } = useProfile();
@@ -16,6 +17,7 @@ export const GameHUD = () => {
   const { tasks } = useTasks();
   const [now, setNow] = useState(new Date());
   const [showSettings, setShowSettings] = useState(false);
+  const isMobile = useIsMobile();
   
   // Update time every minute for countdown
   useEffect(() => {
@@ -52,6 +54,64 @@ export const GameHUD = () => {
 
   const examCountdown = getExamCountdown();
 
+  // Mobile compact HUD
+  if (isMobile) {
+    return (
+      <motion.div
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="fixed top-0 left-0 right-0 z-50 px-2 py-2 bg-card/95 backdrop-blur-sm border-b-4 border-foreground"
+      >
+        <div className="flex items-center justify-between gap-2">
+          {/* Player Info - Compact */}
+          <div className="flex items-center gap-2">
+            <PixelAvatar seed={profile.avatar_seed} size="sm" />
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1">
+                <span className="font-pixel text-[6px] text-primary">Lv.{computedLevel}</span>
+                <span className="font-game text-sm">{profile.name}</span>
+              </div>
+              <PixelBar
+                value={computedExp}
+                max={100}
+                variant="exp"
+                showText={false}
+                className="w-16 h-2"
+              />
+            </div>
+          </div>
+
+          {/* Stats - Compact */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              <Flame className="w-4 h-4 text-accent" />
+              <span className="font-game text-sm">{profile.current_streak}</span>
+            </div>
+            
+            <div className="flex items-center gap-1">
+              <Star className="w-4 h-4 text-game-gold" />
+              <span className="font-game text-sm">{computedPoints}</span>
+            </div>
+
+            {examCountdown && (
+              <div className="flex items-center gap-1">
+                <Clock className="w-4 h-4 text-accent" />
+                <span className="font-game text-sm">{examCountdown.days}d</span>
+              </div>
+            )}
+
+            <button onClick={() => setShowSettings(true)} className="p-1">
+              <Settings className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </div>
+        </div>
+
+        <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
+      </motion.div>
+    );
+  }
+
+  // Desktop HUD
   return (
     <motion.div
       initial={{ y: -20, opacity: 0 }}

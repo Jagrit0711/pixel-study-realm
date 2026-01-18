@@ -17,9 +17,9 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "robots.txt"],
       manifest: {
-        name: "GrindQuest - Gamified Study Accountability",
-        short_name: "GrindQuest",
-        description: "Transform your study routine into an epic pixel-art adventure",
+        name: "STFU Exams - Studying Because of Bro",
+        short_name: "STFU Exams",
+        description: "Transform your study routine into an epic pixel-art adventure. Studying because of bro.",
         theme_color: "#5a7c5a",
         background_color: "#f5f0e6",
         display: "standalone",
@@ -46,6 +46,19 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'supabase-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24, // 24 hours
+              },
+            },
+          },
+        ],
       },
     }),
   ].filter(Boolean),
