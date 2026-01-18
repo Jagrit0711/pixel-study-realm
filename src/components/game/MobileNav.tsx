@@ -1,6 +1,7 @@
 import { useGameStore } from '@/store/gameStore';
 import { motion } from 'framer-motion';
 import { Home, Users, ScrollText, GraduationCap, User } from 'lucide-react';
+import { feedback } from '@/hooks/useSettings';
 
 const navItems = [
   { id: 'hub' as const, icon: Home, label: 'Hub' },
@@ -12,6 +13,11 @@ const navItems = [
 
 export const MobileNav = () => {
   const { currentRoom, setCurrentRoom } = useGameStore();
+
+  const handleNavClick = (id: typeof navItems[number]['id']) => {
+    feedback('click');
+    setCurrentRoom(id);
+  };
 
   return (
     <motion.nav
@@ -27,11 +33,11 @@ export const MobileNav = () => {
           return (
             <button
               key={item.id}
-              onClick={() => setCurrentRoom(item.id)}
-              className={`flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-all ${
+              onClick={() => handleNavClick(item.id)}
+              className={`flex flex-col items-center gap-0.5 py-2 px-2 sm:px-3 rounded-lg transition-all min-w-[48px] ${
                 isActive 
                   ? 'bg-primary text-primary-foreground' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted active:bg-muted'
               }`}
             >
               <motion.div
@@ -40,7 +46,7 @@ export const MobileNav = () => {
               >
                 <Icon className="w-5 h-5" />
               </motion.div>
-              <span className="font-pixel text-[6px] leading-tight">{item.label}</span>
+              <span className="font-pixel text-[5px] sm:text-[6px] leading-tight">{item.label}</span>
             </button>
           );
         })}
