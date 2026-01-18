@@ -1,12 +1,13 @@
 import { useGameStore } from '@/store/gameStore';
 import { motion } from 'framer-motion';
-import { Home, Users, ScrollText, GraduationCap, User } from 'lucide-react';
+import { Home, Users, ScrollText, GraduationCap, User, Wand2 } from 'lucide-react';
 import { feedback } from '@/hooks/useSettings';
 
 const navItems = [
   { id: 'hub' as const, icon: Home, label: 'Hub' },
   { id: 'squad' as const, icon: Users, label: 'Squad' },
   { id: 'quest-board' as const, icon: ScrollText, label: 'Quests' },
+  { id: 'schedule' as const, icon: Wand2, label: 'AI' },
   { id: 'exam-room' as const, icon: GraduationCap, label: 'Exams' },
   { id: 'profile' as const, icon: User, label: 'Profile' },
 ];

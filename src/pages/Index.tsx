@@ -9,6 +9,7 @@ import { SquadRoomConnected } from '@/components/rooms/SquadRoomConnected';
 import { QuestBoardRoomConnected } from '@/components/rooms/QuestBoardRoomConnected';
 import { ExamRoomConnected } from '@/components/rooms/ExamRoomConnected';
 import { ProfileRoomConnected } from '@/components/rooms/ProfileRoomConnected';
+import { ScheduleRoom } from '@/components/rooms/ScheduleRoom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import { OnboardingModal } from '@/components/onboarding/OnboardingModal';
@@ -30,6 +31,8 @@ const Index = () => {
         return <SquadRoomConnected />;
       case 'quest-board':
         return <QuestBoardRoomConnected />;
+      case 'schedule':
+        return <ScheduleRoom />;
       case 'exam-room':
         return <ExamRoomConnected />;
       case 'profile':
