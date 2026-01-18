@@ -55,7 +55,7 @@ export interface UserProfile {
 
 interface GameState {
   // Current view/room
-  currentRoom: 'hub' | 'squad' | 'quest-board' | 'exam-room' | 'profile';
+  currentRoom: 'hub' | 'squad' | 'quest-board' | 'exam-room' | 'profile' | 'schedule';
   currentSquadId: string | null;
   
   // User data
