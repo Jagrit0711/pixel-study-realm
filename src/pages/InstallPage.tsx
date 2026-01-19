@@ -91,7 +91,7 @@ export const InstallPage = () => {
         >
           <div className="max-w-4xl mx-auto flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2">
-              <img src={logo} alt="STFU Exams" className="w-6 h-6" />
+              <img src={logo} alt="STFU Exams" className="w-6 h-6 object-contain" />
               <span className="font-pixel text-[8px] md:text-sm text-foreground">STFU Exams</span>
             </Link>
             <Link to="/">

@@ -66,7 +66,7 @@ export const LandingPage = () => {
         >
           <div className="max-w-6xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <img src={logo} alt="STFU Exams" className="w-8 h-8 md:w-10 md:h-10" />
+              <img src={logo} alt="STFU Exams" className="w-8 h-8 md:w-10 md:h-10 object-contain" />
               <div className="flex flex-col">
                 <span className="font-pixel text-[8px] md:text-[10px] text-foreground">STFU Exams</span>
                 <span className="font-game text-xs text-muted-foreground hidden sm:block">by Zylon Lab</span>
@@ -126,7 +126,7 @@ export const LandingPage = () => {
             >
               <div className="flex items-center justify-center gap-3 md:gap-4 mb-4 md:mb-6">
                 <Sparkles className="w-6 h-6 md:w-10 md:h-10 text-game-gold animate-float" />
-                <img src={logo} alt="STFU Exams" className="w-16 h-16 md:w-24 md:h-24 animate-float" />
+                <img src={logo} alt="STFU Exams" className="w-16 h-16 md:w-24 md:h-24 object-contain animate-float" />
                 <Sparkles className="w-6 h-6 md:w-10 md:h-10 text-game-gold animate-float" />
               </div>
               <h1 className="font-pixel text-lg md:text-2xl lg:text-3xl text-foreground text-shadow-pixel mb-2">
@@ -406,7 +406,7 @@ export const LandingPage = () => {
         <footer className="py-6 md:py-8 px-4 border-t border-border">
           <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <img src={logo} alt="STFU Exams" className="w-5 h-5" />
+              <img src={logo} alt="STFU Exams" className="w-6 h-6 object-contain" />
               <span className="font-game text-lg text-muted-foreground">STFU Exams by Zylon Lab</span>
             </div>
             <div className="flex items-center gap-4 md:gap-6">
