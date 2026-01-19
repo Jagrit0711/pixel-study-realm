@@ -187,7 +187,7 @@ export const TermsPage = () => {
                   </p>
                   <div className="mt-4 p-4 bg-muted rounded">
                     <p className="font-game text-xl text-foreground">Zylon Labs</p>
-                    <p className="font-game text-xl text-muted-foreground">Email: legal@zylonlabs.com</p>
+                    <p className="font-game text-xl text-muted-foreground">Email: jagrit@zuup.dev</p>
                   </div>
                 </section>
               </PixelPanel>

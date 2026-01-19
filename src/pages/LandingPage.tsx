@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Sparkles, Target, Users, Trophy, Shield, Download, ArrowRight, BookOpen, Clock, TrendingUp, Zap, ChevronDown, Menu, X } from 'lucide-react';
+import { Sparkles, Target, Users, Trophy, Shield, Download, ArrowRight, BookOpen, Clock, TrendingUp, Zap, ChevronDown, Menu, X, Heart, GraduationCap, Briefcase, ExternalLink } from 'lucide-react';
 import { PixelButton } from '@/components/game/PixelButton';
 import { PixelPanel } from '@/components/game/PixelPanel';
 import { GameBackground } from '@/components/game/GameBackground';
@@ -327,6 +327,79 @@ export const LandingPage = () => {
               </Link>
             </PixelPanel>
           </motion.div>
+        </section>
+
+        {/* Made with Zuup Section */}
+        <section className="py-12 md:py-16 px-4 bg-primary/5">
+          <div className="max-w-4xl mx-auto">
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true }}
+            >
+              <PixelPanel className="text-center py-8 px-6">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <Heart className="w-5 h-5 text-destructive" />
+                  <span className="font-pixel text-[10px] text-foreground">MADE WITH HELP FROM</span>
+                  <Heart className="w-5 h-5 text-destructive" />
+                </div>
+                
+                <a 
+                  href="https://zuup.dev" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-block"
+                >
+                  <h2 className="font-pixel text-xl md:text-2xl text-primary hover:text-primary/80 transition-colors mb-2">
+                    Zuup
+                  </h2>
+                </a>
+                
+                <p className="font-game text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
+                  Zuup is a social impact initiative by Zylon Labs that focuses on bridging the digital divide for underprivileged teenagers.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <GraduationCap className="w-8 h-8 text-primary mx-auto mb-2" />
+                    <h3 className="font-pixel text-[8px] text-foreground mb-1">SKILL TRAINING</h3>
+                    <p className="font-game text-sm text-muted-foreground">
+                      Graphic design, MS Office, Python & video editing
+                    </p>
+                  </div>
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <Users className="w-8 h-8 text-game-gold mx-auto mb-2" />
+                    <h3 className="font-pixel text-[8px] text-foreground mb-1">30+ LEARNERS</h3>
+                    <p className="font-game text-sm text-muted-foreground">
+                      Trained in foundational digital skills
+                    </p>
+                  </div>
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <Briefcase className="w-8 h-8 text-game-energy mx-auto mb-2" />
+                    <h3 className="font-pixel text-[8px] text-foreground mb-1">FREELANCE READY</h3>
+                    <p className="font-game text-sm text-muted-foreground">
+                      Connecting students to real earning opportunities
+                    </p>
+                  </div>
+                </div>
+
+                <p className="font-game text-lg text-muted-foreground mb-4">
+                  "Teach a person to fish" - providing marginalized youth with tools to participate in the digital economy.
+                </p>
+
+                <a 
+                  href="https://zuup.dev" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  <PixelButton variant="secondary" size="sm">
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Learn More at zuup.dev
+                  </PixelButton>
+                </a>
+              </PixelPanel>
+            </motion.div>
+          </div>
         </section>
 
         {/* Footer */}
