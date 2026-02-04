@@ -12,6 +12,7 @@ import { LandingPage } from "./pages/LandingPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
 import { InstallPage } from "./pages/InstallPage";
+import { PhoneLockPage } from "./pages/PhoneLockPage";
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const AppRoutes = () => (
     <Route path="/privacy" element={<PrivacyPage />} />
     <Route path="/terms" element={<TermsPage />} />
     <Route path="/install" element={<InstallPage />} />
+    <Route path="/lock" element={<PhoneLockPage />} />
     <Route path="/auth" element={
       <AuthRoute>
         <AuthPage />
