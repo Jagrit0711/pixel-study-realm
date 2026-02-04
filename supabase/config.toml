@@ -17,3 +17,9 @@ verify_jwt = false
 
 [functions.ai-study-chat]
 verify_jwt = false
+
+[functions.focus-proctor]
+verify_jwt = false
+
+[functions.spotify-auth]
+verify_jwt = false

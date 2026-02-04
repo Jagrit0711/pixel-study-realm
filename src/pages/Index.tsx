@@ -10,6 +10,7 @@ import { QuestBoardRoomConnected } from '@/components/rooms/QuestBoardRoomConnec
 import { ExamRoomConnected } from '@/components/rooms/ExamRoomConnected';
 import { ProfileRoomConnected } from '@/components/rooms/ProfileRoomConnected';
 import { ScheduleRoom } from '@/components/rooms/ScheduleRoom';
+import { FocusRoom } from '@/components/rooms/FocusRoom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import { OnboardingModal } from '@/components/onboarding/OnboardingModal';
@@ -33,6 +34,8 @@ const Index = () => {
         return <QuestBoardRoomConnected />;
       case 'schedule':
         return <ScheduleRoom />;
+      case 'focus':
+        return <FocusRoom />;
       case 'exam-room':
         return <ExamRoomConnected />;
       case 'profile':
