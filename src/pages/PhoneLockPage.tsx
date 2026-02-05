@@ -6,14 +6,16 @@ import { PixelInput } from '@/components/game/PixelInput';
 import { Timer, Lock, Smartphone, AlertTriangle, Zap, Check, X, Volume2, VolumeX } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Cozy study backgrounds
-const STUDY_BACKGROUNDS = [
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1920&h=1080&fit=crop&blur=5',
-  'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&h=1080&fit=crop&blur=5',
-  'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1920&h=1080&fit=crop&blur=5',
-];
+ // Cozy study backgrounds - warm, aesthetic lo-fi vibes
+ const STUDY_BACKGROUNDS = [
+   'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1920&h=1080&fit=crop', // cozy desk setup
+   'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1920&h=1080&fit=crop', // warm coffee shop
+   'https://images.unsplash.com/photo-1495314736024-fa5e4b37b979?w=1920&h=1080&fit=crop', // rainy window
+   'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1920&h=1080&fit=crop', // library aesthetic
+   'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=1920&h=1080&fit=crop', // cozy room
+ ];
 
-export const PhoneLockPage = () => {
+ const PhoneLockPage = () => {
   const [code, setCode] = useState('');
   const [isLocked, setIsLocked] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -156,14 +158,18 @@ export const PhoneLockPage = () => {
   if (isLocked) {
     return (
       <div className="fixed inset-0 bg-background overflow-hidden">
-        {/* Background */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
-          style={{ 
-            backgroundImage: `url(${STUDY_BACKGROUNDS[backgroundIndex]})`,
-            filter: 'blur(10px) brightness(0.2)'
-          }}
-        />
+       {/* Cozy background with gradient overlay */}
+       <div className="absolute inset-0">
+         <div 
+           className="absolute inset-0 bg-cover bg-center transition-all duration-2000"
+           style={{ 
+             backgroundImage: `url(${STUDY_BACKGROUNDS[backgroundIndex]})`,
+           }}
+         />
+         {/* Warm gradient overlay for cozy vibe - using design tokens */}
+         <div className="absolute inset-0 bg-gradient-to-br from-muted via-background/70 to-accent/40" />
+         <div className="absolute inset-0 backdrop-blur-sm" />
+       </div>
 
         {/* Content */}
         <div className="relative z-10 h-full flex flex-col items-center justify-center p-6">
@@ -322,4 +328,6 @@ export const PhoneLockPage = () => {
       </motion.div>
     </div>
   );
-};
+ };
+ 
+ export default PhoneLockPage;

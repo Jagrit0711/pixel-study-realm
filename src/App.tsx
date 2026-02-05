@@ -12,7 +12,7 @@ import { LandingPage } from "./pages/LandingPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
 import { InstallPage } from "./pages/InstallPage";
-import { PhoneLockPage } from "./pages/PhoneLockPage";
+ import PhoneLockPage from "./pages/PhoneLockPage";
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();

@@ -28,12 +28,14 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
-// Cozy study background images
-const STUDY_BACKGROUNDS = [
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1920&h=1080&fit=crop&blur=5',
-  'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&h=1080&fit=crop&blur=5',
-  'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1920&h=1080&fit=crop&blur=5',
-];
+ // Cozy study background images - warm, aesthetic lo-fi vibes
+ const STUDY_BACKGROUNDS = [
+   'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1920&h=1080&fit=crop', // cozy desk setup
+   'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1920&h=1080&fit=crop', // warm coffee shop
+   'https://images.unsplash.com/photo-1495314736024-fa5e4b37b979?w=1920&h=1080&fit=crop', // rainy window
+   'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1920&h=1080&fit=crop', // library aesthetic
+   'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=1920&h=1080&fit=crop', // cozy room
+ ];
 
 export const FocusRoom = () => {
   const {
@@ -116,6 +118,13 @@ export const FocusRoom = () => {
   const handleStartSession = async () => {
     await startSession(selectedTaskId || undefined);
     setShowSetup(false);
+   
+   // Request fullscreen on session start
+   try {
+     await document.documentElement.requestFullscreen();
+   } catch (err) {
+     console.log('Fullscreen not available:', err);
+   }
   };
 
   const handleEndSession = async () => {
@@ -123,6 +132,11 @@ export const FocusRoom = () => {
     if (result) {
       setShowSetup(true);
       setSelectedTaskId(null);
+     
+     // Exit fullscreen
+     if (document.fullscreenElement) {
+       document.exitFullscreen().catch(() => {});
+     }
     }
   };
 
@@ -181,6 +195,9 @@ export const FocusRoom = () => {
                   <p className="font-game text-lg text-muted-foreground">
                     Connect Spotify to play study music during your focus session.
                   </p>
+                 <p className="font-game text-sm text-muted-foreground">
+                   ⚠️ Make sure Spotify is open on your phone or desktop before connecting.
+                 </p>
                   <PixelButton
                     onClick={connectSpotify}
                     disabled={spotifyLoading}
@@ -314,14 +331,19 @@ export const FocusRoom = () => {
   // Active focus session (fullscreen-like)
   return (
     <div className="fixed inset-0 z-40 bg-background">
-      {/* Background */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
-        style={{ 
-          backgroundImage: `url(${STUDY_BACKGROUNDS[backgroundIndex]})`,
-          filter: 'blur(8px) brightness(0.3)'
-        }}
-      />
+ 
+       {/* Cozy background with gradient overlay */}
+       <div className="absolute inset-0">
+         <div 
+           className="absolute inset-0 bg-cover bg-center transition-all duration-2000"
+           style={{ 
+             backgroundImage: `url(${STUDY_BACKGROUNDS[backgroundIndex]})`,
+           }}
+         />
+         {/* Warm gradient overlay for cozy vibe - using design tokens */}
+         <div className="absolute inset-0 bg-gradient-to-br from-muted via-background/60 to-accent/30" />
+         <div className="absolute inset-0 backdrop-blur-sm" />
+       </div>
 
       {/* Content overlay */}
       <div className="relative z-10 h-full flex flex-col items-center justify-center p-4">
@@ -438,6 +460,9 @@ export const FocusRoom = () => {
                   <p className="font-game text-sm text-muted-foreground mb-2">
                     No music playing
                   </p>
+                 <p className="font-game text-xs text-muted-foreground mb-3">
+                   ⚠️ Open Spotify on any device first
+                 </p>
                   <button
                     onClick={() => setShowPlaylistPicker(true)}
                     className="font-game text-sm text-primary hover:underline"
