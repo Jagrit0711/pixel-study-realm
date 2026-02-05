@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useTasks, Task, DifficultyResult } from '@/hooks/useTasks';
@@ -49,6 +50,7 @@ export const QuestBoardRoomConnected = () => {
     examId: '',
   });
   const [analyzedDifficulty, setAnalyzedDifficulty] = useState<DifficultyResult | null>(null);
+  const isAddingRef = useRef(false);
 
   const dateTasks = tasks.filter(t => t.date === selectedDate);
   const isLocked = isDateLocked(selectedDate);
@@ -94,6 +96,9 @@ export const QuestBoardRoomConnected = () => {
   };
 
   const handleAddTask = async () => {
+    // Prevent double-click
+    if (isAddingRef.current) return;
+    
     if (!newTask.title.trim()) {
       toast.error('Please enter a task title');
       return;
@@ -107,7 +112,9 @@ export const QuestBoardRoomConnected = () => {
       return;
     }
 
-    await addTask({
+    isAddingRef.current = true;
+    
+    const created = await addTask({
       ...newTask,
       task_type: newTask.taskType,
       date: selectedDate,
@@ -115,9 +122,13 @@ export const QuestBoardRoomConnected = () => {
       difficulty: analyzedDifficulty,
     });
 
-    setShowAddModal(false);
-    setNewTask({ title: '', subject: '', chapter: '', taskType: 'reading', examId: '' });
-    setAnalyzedDifficulty(null);
+    isAddingRef.current = false;
+    
+    if (created) {
+      setShowAddModal(false);
+      setNewTask({ title: '', subject: '', chapter: '', taskType: 'reading', examId: '' });
+      setAnalyzedDifficulty(null);
+    }
   };
 
   const handleDeleteTask = (taskId: string) => {
