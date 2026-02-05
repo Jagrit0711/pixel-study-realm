@@ -195,6 +195,9 @@ export const FocusRoom = () => {
                   <p className="font-game text-lg text-muted-foreground">
                     Connect Spotify to play study music during your focus session.
                   </p>
+                 <p className="font-game text-sm text-muted-foreground">
+                   ⚠️ Make sure Spotify is open on your phone or desktop before connecting.
+                 </p>
                   <PixelButton
                     onClick={connectSpotify}
                     disabled={spotifyLoading}
