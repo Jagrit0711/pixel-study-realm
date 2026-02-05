@@ -337,8 +337,8 @@ export const FocusRoom = () => {
              backgroundImage: `url(${STUDY_BACKGROUNDS[backgroundIndex]})`,
            }}
          />
-         {/* Warm gradient overlay for cozy vibe */}
-         <div className="absolute inset-0 bg-gradient-to-br from-amber-950/70 via-background/60 to-purple-950/50" />
+         {/* Warm gradient overlay for cozy vibe - using design tokens */}
+         <div className="absolute inset-0 bg-gradient-to-br from-muted via-background/60 to-accent/30" />
          <div className="absolute inset-0 backdrop-blur-sm" />
        </div>
 

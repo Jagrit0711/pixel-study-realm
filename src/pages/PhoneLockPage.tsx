@@ -166,8 +166,8 @@ import { toast } from 'sonner';
              backgroundImage: `url(${STUDY_BACKGROUNDS[backgroundIndex]})`,
            }}
          />
-         {/* Warm gradient overlay for cozy vibe */}
-         <div className="absolute inset-0 bg-gradient-to-br from-amber-950/80 via-background/70 to-purple-950/60" />
+         {/* Warm gradient overlay for cozy vibe - using design tokens */}
+         <div className="absolute inset-0 bg-gradient-to-br from-muted via-background/70 to-accent/40" />
          <div className="absolute inset-0 backdrop-blur-sm" />
        </div>
 
