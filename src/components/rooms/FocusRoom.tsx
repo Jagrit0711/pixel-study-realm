@@ -457,6 +457,9 @@ export const FocusRoom = () => {
                   <p className="font-game text-sm text-muted-foreground mb-2">
                     No music playing
                   </p>
+                 <p className="font-game text-xs text-muted-foreground mb-3">
+                   ⚠️ Open Spotify on any device first
+                 </p>
                   <button
                     onClick={() => setShowPlaylistPicker(true)}
                     className="font-game text-sm text-primary hover:underline"
