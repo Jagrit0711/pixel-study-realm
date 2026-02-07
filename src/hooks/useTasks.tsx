@@ -66,41 +66,74 @@ export const useTasks = () => {
 
     fetchTasks();
 
-    // Subscribe to task changes
+    // Subscribe to task changes with unique channel name per user
+    const channelName = `task-changes-${user.id}`;
     const channel = supabase
-      .channel('task-changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
+          schema: 'public',
+          table: 'tasks',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Task INSERT received:', payload);
+          const newTask = payload.new as Task;
+          setTasks(prev => {
+            // Prevent duplicates
+            if (prev.some(t => t.id === newTask.id)) return prev;
+            return [...prev, newTask].sort((a, b) => a.date.localeCompare(b.date));
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
           schema: 'public',
           table: 'tasks',
           filter: `user_id=eq.${user.id}`
         },
         async (payload) => {
-          // If a proof-upload task gets approved by a squad member, we award points here.
-          // Reason: reviewers cannot update someone else's profile due to backend security rules.
-          if (payload.eventType === 'UPDATE') {
-            const oldRow = payload.old as Partial<Task> | null;
-            const newRow = payload.new as Task;
+          console.log('Task UPDATE received:', payload);
+          const oldRow = payload.old as Partial<Task> | null;
+          const newRow = payload.new as Task;
 
-            const wasPendingReview = oldRow?.status === 'pending_review';
-            const isNowCompleted = newRow?.status === 'completed';
-            const isUploadProof = newRow?.proof_type === 'upload';
+          // Handle proof approval points
+          const wasPendingReview = oldRow?.status === 'pending_review';
+          const isNowCompleted = newRow?.status === 'completed';
+          const isUploadProof = newRow?.proof_type === 'upload';
 
-            if (wasPendingReview && isNowCompleted && isUploadProof) {
-              if (!awardedTaskIdsRef.current.has(newRow.id)) {
-                awardedTaskIdsRef.current.add(newRow.id);
-                await awardTaskPoints(newRow);
-                toast.success(`Proof approved! +${newRow.points} points`);
-              }
+          if (wasPendingReview && isNowCompleted && isUploadProof) {
+            if (!awardedTaskIdsRef.current.has(newRow.id)) {
+              awardedTaskIdsRef.current.add(newRow.id);
+              await awardTaskPoints(newRow);
+              toast.success(`Proof approved! +${newRow.points} points`);
             }
           }
 
-          fetchTasks();
+          setTasks(prev => prev.map(t => t.id === newRow.id ? newRow : t));
         }
       )
-      .subscribe();
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'tasks',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Task DELETE received:', payload);
+          const deletedId = (payload.old as { id: string }).id;
+          setTasks(prev => prev.filter(t => t.id !== deletedId));
+        }
+      )
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);

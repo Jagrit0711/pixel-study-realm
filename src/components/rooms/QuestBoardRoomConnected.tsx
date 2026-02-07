@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useTasks, Task, DifficultyResult } from '@/hooks/useTasks';
@@ -50,7 +49,7 @@ export const QuestBoardRoomConnected = () => {
     examId: '',
   });
   const [analyzedDifficulty, setAnalyzedDifficulty] = useState<DifficultyResult | null>(null);
-  const isAddingRef = useRef(false);
+  const [isAdding, setIsAdding] = useState(false);
 
   const dateTasks = tasks.filter(t => t.date === selectedDate);
   const isLocked = isDateLocked(selectedDate);
@@ -95,9 +94,9 @@ export const QuestBoardRoomConnected = () => {
     }
   };
 
-  const handleAddTask = async () => {
-    // Prevent double-click
-    if (isAddingRef.current) return;
+  const handleAddTask = useCallback(async () => {
+    // Prevent double-click with state lock
+    if (isAdding) return;
     
     if (!newTask.title.trim()) {
       toast.error('Please enter a task title');
@@ -112,24 +111,26 @@ export const QuestBoardRoomConnected = () => {
       return;
     }
 
-    isAddingRef.current = true;
+    setIsAdding(true);
     
-    const created = await addTask({
-      ...newTask,
-      task_type: newTask.taskType,
-      date: selectedDate,
-      exam_id: newTask.examId || undefined,
-      difficulty: analyzedDifficulty,
-    });
-
-    isAddingRef.current = false;
-    
-    if (created) {
-      setShowAddModal(false);
-      setNewTask({ title: '', subject: '', chapter: '', taskType: 'reading', examId: '' });
-      setAnalyzedDifficulty(null);
+    try {
+      const created = await addTask({
+        ...newTask,
+        task_type: newTask.taskType,
+        date: selectedDate,
+        exam_id: newTask.examId || undefined,
+        difficulty: analyzedDifficulty,
+      });
+      
+      if (created) {
+        setShowAddModal(false);
+        setNewTask({ title: '', subject: '', chapter: '', taskType: 'reading', examId: '' });
+        setAnalyzedDifficulty(null);
+      }
+    } finally {
+      setIsAdding(false);
     }
-  };
+  }, [isAdding, newTask, analyzedDifficulty, selectedDate, addTask]);
 
   const handleDeleteTask = (taskId: string) => {
     deleteTask(taskId);
@@ -531,9 +532,16 @@ export const QuestBoardRoomConnected = () => {
                     <PixelButton 
                       onClick={handleAddTask} 
                       className="flex-1"
-                      disabled={!analyzedDifficulty}
+                      disabled={!analyzedDifficulty || isAdding}
                     >
-                      Add Quest
+                      {isAdding ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Adding...
+                        </>
+                      ) : (
+                        'Add Quest'
+                      )}
                     </PixelButton>
                     <PixelButton
                       variant="secondary"
